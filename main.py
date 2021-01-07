@@ -10,6 +10,7 @@ import torch.nn as nn
 from train import train_one_epoch
 import torch.optim as optim
 import wandb
+import argparse
 
 def num_samples(filename, data_root, win_length, overlap):
     path = os.path.join(data_root, filename)
@@ -23,21 +24,33 @@ def init_metadata(csv_path):
     df = df.sort_values('num_samples', ascending=True).reset_index(drop=True)
     return df
 
+
+
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_root', type=str, default='test_clips')
+    parser.add_argument('--csv_path', type=str, default='test_clips_info.csv')
+    parser.add_argument('--train_batch_size', type=int, default=5)
+    parser.add_argument('--epochs', type=int, default=10)
+    args = parser.parse_args()
+
+
     wandb.init()
     pd.set_option('display.max_columns', None)
-    df = init_metadata('test_clips_info.csv')
+    df = init_metadata(args.csv_path)
 
-    dataset = SoundClipDataset(df)
-    loader = DataLoader(dataset, batch_size=30, collate_fn=collate_fn)
+    dataset = SoundClipDataset(df, data_root=args.data_root)
+    loader = DataLoader(dataset, batch_size=args.train_batch_size, collate_fn=collate_fn)
     model = SpeechModel()
     optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=10e-6)
     ctc_loss = nn.CTCLoss(zero_infinity=True)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.8)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    for i in range(30):
+    for i in range(args.epochs):
         train_one_epoch(model, ctc_loss, optimizer, scheduler, loader, device)
+    torch.save(model.state_dict(), 'model.pt')
 
 
 
