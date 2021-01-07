@@ -25,17 +25,16 @@ def init_metadata(csv_path, data_root):
     return df
 
 if __name__ == '__main__':
+    print('in main')
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_root', type=str, default='test_clips')
     parser.add_argument('--csv_path', type=str, default='test_clips_info.csv')
     parser.add_argument('--train_batch_size', type=int, default=5)
     parser.add_argument('--epochs', type=int, default=10)
     args = parser.parse_args()
-
+    print('here')
 
     wandb.init()
-    pd.set_option('display.max_columns', None)
-
     df = init_metadata(args.csv_path, args.data_root)
     print('init metadata')
     dataset = SoundClipDataset(df, data_root=args.data_root)
