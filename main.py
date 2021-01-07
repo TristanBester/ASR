@@ -17,15 +17,12 @@ def num_samples(filename, data_root, win_length, overlap):
     time = get_wav_length_ms(path)
     return get_num_samples(time, win_length, overlap)
 
-def init_metadata(csv_path):
+def init_metadata(csv_path, data_root):
     df = pd.read_csv(csv_path)
-    df['num_samples'] = df['path'].apply(num_samples, data_root='test_clips',
+    df['num_samples'] = df['path'].apply(num_samples, data_root=data_root,
                                          win_length=20, overlap=0.5)
     df = df.sort_values('num_samples', ascending=True).reset_index(drop=True)
     return df
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -38,7 +35,7 @@ if __name__ == '__main__':
 
     wandb.init()
     pd.set_option('display.max_columns', None)
-    df = init_metadata(args.csv_path)
+    df = init_metadata(args.csv_path, args.data_root)
 
     dataset = SoundClipDataset(df, data_root=args.data_root)
     loader = DataLoader(dataset, batch_size=args.train_batch_size, collate_fn=collate_fn)
