@@ -35,8 +35,9 @@ if __name__ == '__main__':
 
     wandb.init()
     pd.set_option('display.max_columns', None)
-    df = init_metadata(args.csv_path, args.data_root)
 
+    df = init_metadata(args.csv_path, args.data_root)
+    print('init metadata')
     dataset = SoundClipDataset(df, data_root=args.data_root)
     loader = DataLoader(dataset, batch_size=args.train_batch_size, collate_fn=collate_fn)
     model = SpeechModel()
@@ -44,8 +45,10 @@ if __name__ == '__main__':
     ctc_loss = nn.CTCLoss(zero_infinity=True)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.8)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print('setup model')
 
     for i in range(args.epochs):
+        print('training one epoch')
         train_one_epoch(model, ctc_loss, optimizer, scheduler, loader, device)
     torch.save(model.state_dict(), 'model.pt')
 
