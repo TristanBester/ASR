@@ -12,8 +12,6 @@ import torch.optim as optim
 import wandb
 import argparse
 
-'''This is phase 2'''
-
 def num_samples(filename, data_root, win_length, overlap):
     path = os.path.join(data_root, filename)
     time = get_wav_length_ms(path)

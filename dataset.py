@@ -19,9 +19,10 @@ class TextEncoder():
     def encode(self, sentence):
         sentence = sentence.translate(self.translation)
         sentence = sentence.lower()
-        encoded = []
+        encoded = [0]
         for ch in sentence:
             encoded.append(self.mapping[ch])
+            encoded.append(0)
         return encoded
 
 
@@ -66,8 +67,36 @@ class SoundClipDataset(Dataset):
         path = os.path.join(self.data_root, path)
         waveform, sample_rate = torchaudio.load(path)
         # normalize waveform.
-        waveform = (waveform - waveform.mean())/waveform.std()
-        spectrogram = self.get_spectrogram(waveform, sample_rate)
+        #waveform = (waveform - waveform.mean())/waveform.std()
+        #spectrogram = self.get_spectrogram(waveform, sample_rate)
+
+        win_length = int(self.sample_rate * self.window_time)
+        hop_length = int(win_length * self.overlap)
+        waveform = torchaudio.transforms.MelSpectrogram(
+                                sample_rate=self.sample_rate, n_mels=128,
+                                win_length=win_length, hop_length=hop_length)(waveform)
+
+        '''my_trans = torchaudio.transforms.MelSpectrogram(
+                                sample_rate=8000, n_mels=128,
+                                win_length=160, hop_length=80)
+        their_trans = torchaudio.transforms.MelSpectrogram(sample_rate=16000, n_mels=128)
+        my_spec = my_trans(waveform).squeeze(0).transpose(0,1)
+        their_spec = their_trans(waveform).squeeze(0).transpose(0,1)
+
+        plt.figure(1)
+        plt.subplot(211)
+        plt.imshow(my_spec)
+        plt.subplot(212)
+        plt.imshow(their_spec)
+        plt.show()
+        '''
+
+
+
+
+
+
+        spectrogram = np.log(waveform + 10e-14)
         return spectrogram.squeeze(dim=0)
 
     def __getitem__(self, idx):
