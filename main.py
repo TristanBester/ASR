@@ -36,7 +36,7 @@ if __name__ == '__main__':
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, collate_fn=collate_fn)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = SpeechModel(channels=128).to(device)
+    model = SpeechModel(channels=128).cuda()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=args.lr_decay, verbose=True)
     criterion = nn.CTCLoss(blank=0, zero_infinity=True).to(device)
