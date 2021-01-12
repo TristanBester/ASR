@@ -8,8 +8,33 @@ import numpy as np
 import string
 import librosa
 
+class SoundClipDataset(Dataset):
+    def __init__(self, csv_path='', data_root='', is_valid=False, sample_rate=8000):
+        self.df = pd.read_csv(csv_path)
+        self.data_root = data_root
+        self.is_valid = is_valid
+        self.sample_rate = sample_rate
 
-class TextEncoder():
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''class TextEncoder():
     def __init__(self):
         alphabet = [chr(i) for i in range(97, 123)]
         self.mapping = {ch:i for ch,i in zip(alphabet, range(1, len(alphabet)+1))}
@@ -91,4 +116,4 @@ def collate_fn(batch):
     spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).permute(0,2,1)
     # <eos> : 27
     labels = nn.utils.rnn.pad_sequence(labels, batch_first=True, padding_value=27)
-    return spectrograms, labels, target_lengths
+    return spectrograms, labels, target_lengths'''
