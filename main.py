@@ -38,7 +38,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = SpeechModel(channels=128).to(device)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    scheduler = optim.lr_scheduler(optimizer, step_size=1, gamma=args.lr_decay, verbose=True)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=args.lr_decay, verbose=True)
     criterion = nn.CTCLoss(blank=0, zero_infinity=True).to(device)
 
     for epoch in range(args.epochs):
