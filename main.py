@@ -43,6 +43,6 @@ if __name__ == '__main__':
 
     for epoch in range(args.epochs):
         train_one_epoch(model, criterion, optimizer, train_loader, device, scheduler=scheduler, logging=True)
-        validation(model, criterion, loader, device, logging=True)
+        validation(model, criterion, test_loader, device, logging=True)
         view_progress(model, test_loader, device, f'view_progress_{epoch}.txt')
         torch.save(model.state_dict(), f'ASR_model_{epoch}.pt')
