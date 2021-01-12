@@ -18,7 +18,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, scheduler=
         with autocast():
             preds = model(spectrograms)
             preds = F.log_softmax(preds, dim=2).permute(1,0,2)
-            pred_lens = torch.full(size=(preds.shape[1],), fill_value=preds.shape[0], dtype=torch.long)
+            pred_lens = torch.full(size=(preds.shape[1],), fill_value=preds.shape[0], dtype=torch.long).to(device)
             loss = criterion(preds, labels, pred_lens, label_lens)
 
         scaler.scale(loss).backward()
