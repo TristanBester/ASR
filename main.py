@@ -23,6 +23,7 @@ def init_args():
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--lr_decay', type=float, default=0.5)
     parser.add_argument('--batch_size', type=int, default=4)
+    parser.add_argument('--num_workers', type=int, default=2)
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -32,8 +33,10 @@ if __name__ == '__main__':
     train_dataset = SoundClipDataset(csv_path=args.train_csv, data_root=args.data_root)
     val_dataset = SoundClipDataset(csv_path=args.val_csv, data_root=args.data_root)
 
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, collate_fn=collate_fn)
-    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, collate_fn=collate_fn)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size,
+                              collate_fn=collate_fn, num_workers=args.num_workers)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size,
+                            collate_fn=collate_fn, num_workers=args.num_workers)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model = SpeechModel(channels=128).to(device)
@@ -42,7 +45,8 @@ if __name__ == '__main__':
     criterion = nn.CTCLoss(blank=0, zero_infinity=True).to(device)
 
     for epoch in range(args.epochs):
-        #train_one_epoch(model, criterion, optimizer, train_loader, device, scheduler=scheduler, logging=True)
+        train_one_epoch(model, criterion, optimizer, train_loader, device, scheduler=scheduler, logging=True)
         validation(model, criterion, val_loader, device, logging=True)
-        view_progress(model, val_loader, device, f'view_progress_{epoch}.txt')
+        view_progress(model, train_loader, device, f'view_progress_train_{epoch}.txt')
+        view_progress(model, val_loader, device, f'view_progress_val_{epoch}.txt')
         torch.save(model.state_dict(), f'ASR_model_{epoch}.pt')
