@@ -8,6 +8,7 @@ from metrics import WER, CER
 
 def validation(model, criterion, data_loader, device, logging=False):
     model = model.eval()
+    model = model.to(device)
     decoder = Decoder()
     pbar = tqdm(data_loader, position=0, leave=True, total=len(data_loader))
     pbar.set_description('Validation: ')
@@ -58,7 +59,8 @@ def validation(model, criterion, data_loader, device, logging=False):
 
 
 def view_progress(model, data_loader, device, file_name, sample_count=100):
-    model.eval()
+    model = model.eval()
+    model = model.to(device)
     decoder = Decoder()
     pbar = tqdm(data_loader, position=0, leave=True, total=len(data_loader))
     pbar.set_description('View progress: ')

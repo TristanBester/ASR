@@ -5,6 +5,7 @@ import wandb
 import torch.nn.functional as F
 
 def train_one_epoch(model, criterion, optimizer, data_loader, device, scheduler=None, logging=False):
+    model = model.to(device)
     model = model.train()
     pbar = tqdm(data_loader, position=0, leave=True, total=len(data_loader))
     pbar.set_description('Training: ')
@@ -17,8 +18,12 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, scheduler=
 
         preds = model(spectrograms)
         preds = F.log_softmax(preds, dim=2).permute(1,0,2)
-        pred_lens = torch.full(size=(preds.shape[1],), fill_value=preds.shape[0], dtype=torch.long).to(device)
+        print(preds)
+        pred_lens = torch.full(size=(preds.shape[1],), fill_value=preds.shape[0],
+                               dtype=torch.long).to(device)
         loss = criterion(preds, labels, pred_lens, label_lens)
+        print(loss)
+        0/0
 
         loss.backward()
         optimizer.step()
