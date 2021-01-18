@@ -17,7 +17,7 @@ class TextEncoder():
         if x is not None:
             return [self.int_char_mapping[i] for i in x]
         else:
-            return [];
+            return []
 
 class Decoder():
     def __init__(self, blank_val=0):
@@ -35,14 +35,7 @@ class Decoder():
     def decode_labels(self, labels, pad_val=0):
         decoded_labels = []
         for label in labels:
-            #print(label)
             label = self.__strip_padding(label, pad_val)
-            #print(label)
-
-            #if len(label) == 0:
-            #    print('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
-
-
             decoded_labels.append(self.text_encoder.int_to_char(label))
         return self.collapse(decoded_labels)
 

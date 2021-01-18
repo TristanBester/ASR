@@ -58,6 +58,35 @@ def validation(model, criterion, data_loader, device, logging=False):
         wandb.log({'val_CER':loss.item()})
 
 
+def view_progress(model, data_loader, sample_count=10):
+    model = model.eval()
+    decoder = Decoder()
+    #pbar = tqdm(data_loader, position=0, leave=True, total=len(data_loader))
+    #pbar.set_description('View progress: ')
+    all_labels = []
+    all_preds = []
+
+    with torch.no_grad():
+        counter = 0
+        for spectrograms, labels, _ in data_loader:
+            preds = model(spectrograms)
+            preds = F.log_softmax(preds, dim=2).permute(1,0,2)
+
+            greedy_preds = decoder.greedy_decode(preds.permute(1,0,2).cpu().numpy())
+            all_labels += [decoder.decode_labels(labels.cpu().numpy(), pad_val=0)]
+            all_preds += [decoder.collapse(greedy_preds)]
+
+            if counter == sample_count:
+                break
+            else:
+                counter += 1
+
+    all_preds = np.concatenate(all_preds, axis=0)
+    all_labels = np.concatenate(all_labels, axis=0)
+    return all_preds, all_labels
+
+
+'''
 def view_progress(model, data_loader, device, file_name, sample_count=100):
     model = model.eval()
     model = model.to(device)
@@ -91,8 +120,7 @@ def view_progress(model, data_loader, device, file_name, sample_count=100):
     with open(file_name, 'w') as f:
         for pred, label in zip(all_preds, all_labels):
             f.write(f'{label},{pred}\n')
-
-
+'''
 
 
 
