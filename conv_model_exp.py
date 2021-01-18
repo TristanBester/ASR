@@ -44,7 +44,8 @@ for epoch in range(50):
 
         #print(loss.item())
         n += 1
-        ave = incremental_average(ave, loss.item(), n)
+        if not torch.isnan(loss):
+            ave = incremental_average(ave, loss.item(), n)
         pbar.set_description('Loss - ' + '%.4f' % loss.item())
     print()
     scheduler.step()
