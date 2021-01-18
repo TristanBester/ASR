@@ -12,10 +12,10 @@ def incremental_average(ave, a, n):
     return ave + (a - ave)/n
 
 decoder = Decoder()
-dataset = SoundClipDataset()
+dataset = SoundClipDataset(csv_path='top_thou.csv', data_root='top_thou')
 data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 
-device = torch.device('cpu')
+device = torch.device('cuda')
 model = ConvModel().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.01)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.5, verbose=True)
