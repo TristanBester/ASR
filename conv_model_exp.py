@@ -19,7 +19,7 @@ device = torch.device('cuda')
 model = ConvModel().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.01)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.5, verbose=True)
-ctc_loss = nn.CTCLoss().to(device)
+ctc_loss = nn.CTCLoss(zero_infinity=True).to(device)
 
 for epoch in range(50):
     n = 0
