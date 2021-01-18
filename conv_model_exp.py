@@ -43,10 +43,10 @@ for epoch in range(1000):
         loss.backward()
         optimizer.step()
 
-        n += 1
-        if not torch.isnan(loss):
-            ave = incremental_average(ave, loss.item(), n)
-        pbar.set_description('Loss - ' + '%.4f' % ave)
+        #n += 1
+        #if not torch.isnan(loss):
+        #ave = incremental_average(ave, loss.item(), n)
+        pbar.set_description(f'Loss - {loss.item()}')
     print()
     scheduler.step()
     print('Model predictions: ')
