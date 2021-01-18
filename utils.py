@@ -33,6 +33,7 @@ class Decoder():
                 return x[:-i]
 
     def decode_labels(self, labels, pad_val=0):
+        # labels must first be detached and converted to numpy
         decoded_labels = []
         for label in labels:
             label = self.__strip_padding(label, pad_val)

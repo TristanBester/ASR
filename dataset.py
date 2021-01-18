@@ -10,6 +10,115 @@ import librosa
 import pandas as pd
 from utils import TextEncoder
 
+
+class LogMelSpectrogram(nn.Module):
+    def __init__(self, sample_rate, window_ms, overlap, n_mels):
+        super().__init__()
+        self.transform = torchaudio.transforms.MelSpectrogram(sample_rate = sample_rate,
+                                                   win_length = window_ms,
+                                                   hop_length = int(window_ms * overlap),
+                                                   n_mels = n_mels)
+    def forward(self, x):
+        x = self.transform(x)
+        return torch.log1p(x)
+
+
+class SoundClipDataset(Dataset):
+    def __init__(self, csv_path='prepared_csv/short_clips.csv', data_root='short_clips',
+                 sample_rate=16000, window_ms=400, overlap=0.5, n_mels=128):
+        self.df = pd.read_csv(csv_path)
+        self.data_root = data_root
+        self.sample_rate = sample_rate
+        self.log_mel_spec_trans = LogMelSpectrogram(sample_rate, window_ms,
+                                                    overlap, n_mels)
+        self.encoder = TextEncoder()
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        file_name = self.df.iloc[idx]['path']
+        path = os.path.join(self.data_root, file_name)
+        waveform, orig_sample_rate = torchaudio.load(path)
+        waveform = torchaudio.transforms.Resample(orig_freq=orig_sample_rate,
+                                              new_freq=self.sample_rate)(waveform)
+        waveform = (waveform - waveform.mean())/waveform.std()
+        spectrogram = self.log_mel_spec_trans(waveform)
+
+        label = self.df.iloc[idx]['cleaned_sentence']
+        label = torch.LongTensor(self.encoder.char_to_int(label))
+        label_len = torch.LongTensor([len(label)])
+        return spectrogram, label
+
+
+def collate_fn(batch, label_pad_val=0):
+    spectrograms = []
+    labels = []
+    label_lens = []
+
+    for spectrogram, label in batch:
+        spectrograms.append(spectrogram.permute(2,0,1))
+        labels.append(label)
+        label_lens.append(label.shape[0])
+
+    spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True)
+    labels = nn.utils.rnn.pad_sequence(labels, batch_first=True)
+    spectrograms = spectrograms.permute(0, 2, 3, 1)
+    label_lens = torch.LongTensor(label_lens)
+
+    return spectrograms, labels, label_lens
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+
 class TextTransform:
     """Maps characters to integers and vice versa"""
     def __init__(self):
@@ -70,16 +179,7 @@ class TextTransform:
         return ''.join(string).replace('<SPACE>', ' ')
 
 
-class LogMelSpectrogram(nn.Module):
-    def __init__(self, sample_rate, window_ms, overlap, n_mels):
-        super().__init__()
-        self.transform = torchaudio.transforms.MelSpectrogram(sample_rate = sample_rate,
-                                                   win_length = window_ms,
-                                                   hop_length = int(window_ms * overlap),
-                                                   n_mels = n_mels)
-    def forward(self, x):
-        x = self.transform(x)
-        return torch.log1p(x)
+
 
 class SoundClipDataset(Dataset):
     def __init__(self, csv_path='prepared_csv/short_clips.csv', data_root='short_clips',
@@ -101,38 +201,20 @@ class SoundClipDataset(Dataset):
         waveform, orig_sample_rate = torchaudio.load(path)
         waveform = torchaudio.transforms.Resample(orig_freq=orig_sample_rate,
                                               new_freq=self.sample_rate)(waveform)
-        #waveform = (waveform - waveform.mean())/waveform.std()
-        #spectrogram = self.log_mel_spec_trans(waveform)
+        waveform = (waveform - waveform.mean())/waveform.std()
+        spectrogram = self.log_mel_spec_trans(waveform)
 
         #other:
-        '''spectrogram = torchaudio.transforms.MelSpectrogram()(waveform).squeeze(0).transpose(0, 1)
-        print(spectrogram.shape)
-
-
-
-
+        spectrogram = torchaudio.transforms.MelSpectrogram()(waveform).squeeze(0).transpose(0, 1)
         label = self.df.iloc[idx]['cleaned_sentence']
         label = torch.LongTensor(self.encoder.char_to_int(label))
-        label_len = torch.LongTensor([len(label)])'''
-        #return spectrogram, label, label_len
-        label = self.df.iloc[idx]['cleaned_sentence']
-        return waveform, label
+        label_len = torch.LongTensor([len(label)])
+        return spectrogram, label, label_len
+        #label = self.df.iloc[idx]['cleaned_sentence']
+        #return waveform, label
 
 
-def collate_fn(batch, label_pad_val=0):
-    spectrograms = []
-    labels = []
-    label_lens = []
 
-    for spectrogram, label, label_len  in batch:
-        spectrograms.append(spectrogram.squeeze(0).permute(1,0))
-        labels.append(label)
-        label_lens.append(label_len)
-
-    spectrograms = nn.utils.rnn.pad_sequence(spectrograms, batch_first=True).permute(0,2,1)
-    labels = nn.utils.rnn.pad_sequence(labels, batch_first=True, padding_value=label_pad_val)
-    label_lens = torch.LongTensor(label_lens)
-    return spectrograms, labels, label_lens
 
 
 def data_processing(data, data_type="train"):
@@ -173,4 +255,4 @@ def GreedyDecoder(output, labels, label_lengths, blank_label=28, collapse_repeat
 					continue
 				decode.append(index.item())
 		decodes.append(TextTransform().int_to_text(decode))
-	return decodes, targets
+	return decodes, targets'''

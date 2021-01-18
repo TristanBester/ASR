@@ -1,9 +1,8 @@
-from dataset import SoundClipDataset, collate_fn, data_processing, GreedyDecoder
+from dataset import SoundClipDataset, collate_fn
 import pandas as pd
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import os
-from model import SpeechModel
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -15,43 +14,32 @@ from validation import validation, view_progress
 import numpy as np
 from other_model import SpeechRecognitionModel
 from tqdm import tqdm
+from  models import SimpleModel, OtherModel, ConvModel
 
 
 if __name__ == '__main__':
     dataset = SoundClipDataset()
-    loader = DataLoader(dataset, batch_size=1, collate_fn=data_processing)
+    loader = DataLoader(dataset, batch_size=2, collate_fn=collate_fn)
+    decoder = Decoder()
 
-    model = SpeechRecognitionModel()
-    ctc_loss = nn.CTCLoss(blank=28)
-    optimizer = optim.AdamW(model.parameters(), lr=0.00001)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
-                                                     patience=10, factor=0.8,
-                                                     verbose=True)
+    simple_model = SimpleModel(channels=128,
+                        rnn_layers=5,
+                        hidden_size=512,
+                        n_classes=28)
+    other_model = OtherModel(n_class=28)
+    conv_model = ConvModel(128)
 
-    '''scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=5e-2,
-                                            steps_per_epoch=10,
-                                            epochs=10,
-                                            anneal_strategy='linear')'''
+    for specs, labels, spec_lens, label_lens in loader:
+        x_one = simple_model(specs.squeeze(1))
+        x_two = other_model(specs)
+        x_three = conv_model(specs)
 
-    for epoch in range(500):
-        for i, (specs, labels, spec_lens, label_lens) in enumerate(loader):
-            optimizer.zero_grad()
-            preds = model(specs)
-            preds = F.log_softmax(preds, dim=2).transpose(0,1)
-            loss = ctc_loss(preds, labels, spec_lens, label_lens)
-            loss.backward()
-            optimizer.step()
-            scheduler.step(loss.item())
-            print(f'Epoch: {epoch} - {loss.item()}')
+        print(x_one.shape)
+        print(x_two.shape)
+        print(x_three.shape)
+        break
 
-            if epoch % 50 == 0:
-                print(labels)
-                decoded_preds, decoded_targets = GreedyDecoder(preds.transpose(0, 1), labels, label_lens)
-                print(decoded_preds)
-                plt.imshow(preds.permute(1,2,0).squeeze(0).detach().numpy())
-                plt.colorbar()
-                plt.show()
-            break
+
 
 
 
