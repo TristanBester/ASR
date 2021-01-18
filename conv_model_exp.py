@@ -57,8 +57,8 @@ for epoch in range(50):
 
             outputs = model(specs)
             outputs = F.log_softmax(outputs, dim=2)
-            preds = decoder.greedy_decode(outputs)[0]
-            labels = decoder.decode_labels(labels.numpy())[0]
+            preds = decoder.greedy_decode(outputs.cpu().numpy())[0]
+            labels = decoder.decode_labels(labels.cpu().numpy())[0]
             print(f'{labels} - {preds}')
 
             if i == 20:
