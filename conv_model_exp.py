@@ -17,8 +17,8 @@ data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 
 device = torch.device('cuda')
 model = ConvModel().to(device)
-optimizer = optim.Adam(model.parameters(), lr=0.01)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.99, verbose=True)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.996, verbose=True)
 ctc_loss = nn.CTCLoss(zero_infinity=True).to(device)
 
 for epoch in range(1000):
