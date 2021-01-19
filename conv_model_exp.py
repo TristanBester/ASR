@@ -15,7 +15,7 @@ decoder = Decoder()
 dataset = SoundClipDataset(csv_path='top_thou.csv', data_root='top_thou')
 data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 
-device = torch.device('cpu')
+device = torch.device('cuda')
 #model = ConvModel().to(device)
 model = ShallowConv().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
