@@ -157,7 +157,7 @@ class ConvModel(nn.Module):
         x = torch.clip(F.relu(self.conv_2(x)), min=0, max=20)
         x = self.max_pool_2(x)
         x = torch.clip(F.relu(self.conv_3(x)), min=0, max=20)
-        x = torch.clip(F.relu(self.conv_4(x)), min=0, max=20))
+        x = torch.clip(F.relu(self.conv_4(x)), min=0, max=20)
         x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
         x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
         x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
