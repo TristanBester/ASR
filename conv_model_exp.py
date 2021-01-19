@@ -18,15 +18,16 @@ data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 device = torch.device('cuda')
 model = ConvModel().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.996, verbose=True)
+#scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.996, verbose=True)
 ctc_loss = nn.CTCLoss(zero_infinity=True).to(device)
 
 for epoch in range(1000):
     print(f'Epoch: {epoch}')
     n = 0
     ave = 0
-    pbar = tqdm(data_loader, position=0, leave=True, total=len(data_loader))
+    pbar = tqdm(data_loader, position=0, leave=True, total=5)
     model.train()
+    counter = 0
     for specs, labels, label_lens in pbar:
         specs = specs.to(device)
         labels = labels.to(device)
@@ -43,12 +44,17 @@ for epoch in range(1000):
         loss.backward()
         optimizer.step()
 
+        if counter == 5:
+            break
+        else:
+            counter += 1
+
         #n += 1
         #if not torch.isnan(loss):
         #ave = incremental_average(ave, loss.item(), n)
         pbar.set_description(f'Loss - {loss.item()}')
-    print()
-    scheduler.step()
+    #print()
+    #scheduler.step()
     print('Model predictions: ')
     model.eval()
     with torch.no_grad():
@@ -63,7 +69,7 @@ for epoch in range(1000):
             labels = decoder.decode_labels(labels.cpu().numpy())[0]
             print(f'{labels} - {preds}')
 
-            if i == 20:
+            if i == 5:
                 break
 
 

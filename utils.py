@@ -55,7 +55,8 @@ class Decoder():
                 elif pred[i] != pred[i+1]:
                     greedy_pred.append(pred[i])
             greedy_preds.append(self.text_encoder.int_to_char(greedy_pred))
-        return greedy_preds
+        preds = [ '\'' + ''.join(pred) + '\'' for pred in greedy_preds]
+        return preds
 
     def collapse(self, ls):
         collapsed = [''] * len(ls)
