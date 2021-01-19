@@ -25,9 +25,10 @@ for epoch in range(1000):
     print(f'Epoch: {epoch}')
     n = 0
     ave = 0
-    pbar = tqdm(data_loader, position=0, leave=True, total=5)
+    pbar = tqdm(data_loader, position=0, leave=True, total=1000)
     model.train()
     counter = 0
+    epoch_loss = 0
     for specs, labels, label_lens in pbar:
         specs = specs.to(device)
         labels = labels.to(device)
@@ -43,6 +44,8 @@ for epoch in range(1000):
         loss = ctc_loss(outputs, labels, output_lens, label_lens)
         loss.backward()
         optimizer.step()
+        print(loss.item())
+        epoch_loss += loss.item()
 
         '''if counter == 5:
             break
@@ -55,6 +58,7 @@ for epoch in range(1000):
         pbar.set_description(f'Loss - {loss.item()}')
     #print()
     #scheduler.step()
+    print(f'Epoch loss: {epoch_loss/1000}')
     print('Model predictions: ')
     model.eval()
     with torch.no_grad():
