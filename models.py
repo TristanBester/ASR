@@ -161,8 +161,66 @@ class ConvModel(nn.Module):
         x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
         x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
         x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
-        h0 = torch.zeros(2, x.shape[0], 128)
-        x, h_l = self.rnn(x)
+        h0 = torch.zeros(2, x.shape[0], 512)
+        x, h_l = self.rnn(x, h0)
         x = self.classifier(x)
         return x # batch, time, class
 # end of conv model.
+
+
+# conv model shallow
+
+class ShallowConv(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(5,3), stride=(1,1))
+        self.max_pool_1 = nn.MaxPool2d(kernel_size=(2,2))
+        self.conv_2 = nn.Conv2d(in_channels=32, out_channels=32,
+                                kernel_size=(5,3))
+        self.max_pool_2 = nn.MaxPool2d(kernel_size=(2,2))
+        self.conv_3 = nn.Conv2d(in_channels=32, out_channels=64,
+                                kernel_size=(3,3))
+
+        self.fc_1 = nn.Linear(in_features=1728, out_features=128)
+
+        self.rnn = nn.RNN(input_size=128, hidden_size=128, num_layers=5,
+                          batch_first=True, nonlinearity='tanh')
+
+        self.classifier = nn.Linear(in_features=128, out_features=28)
+
+
+    def forward(self, x):
+        x = F.relu(self.conv_1(x))
+        x = self.max_pool_1(x)
+        x = F.relu(self.conv_2(x))
+        x = self.max_pool_2(x)
+        x = F.relu(self.conv_3(x))
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = F.relu(self.fc_1(x))
+        h0 = torch.zeros(5, x.shape[0], 128)
+        x, h_l = self.rnn(x, h0)
+        x = self.classifier(x)
+        return x # batch, time, class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#end

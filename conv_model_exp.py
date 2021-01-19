@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from dataset import SoundClipDataset, collate_fn
-from models import ConvModel
+from models import ConvModel, ShallowConv
 from tqdm import tqdm
 from utils import Decoder
 
@@ -15,19 +15,20 @@ decoder = Decoder()
 dataset = SoundClipDataset(csv_path='top_thou.csv', data_root='top_thou')
 data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 
-device = torch.device('cuda')
-model = ConvModel().to(device)
+device = torch.device('cpu')
+#model = ConvModel().to(device)
+model = ShallowConv().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.996, verbose=True)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1,
-                                                 patience=5, min_lr=10e-10, verbose=True)
+#scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1,
+#                                                 patience=10, min_lr=10e-10, verbose=True)
 ctc_loss = nn.CTCLoss(zero_infinity=True).to(device)
 
-for epoch in range(1000):
+for epoch in range(10000):
     print(f'Epoch: {epoch}')
     n = 0
     ave = 0
-    pbar = tqdm(data_loader, position=0, leave=True, total=1000)
+    pbar = tqdm(data_loader, position=0, leave=True, total=500)
     model.train()
     counter = 0
     epoch_loss = 0
@@ -67,10 +68,10 @@ for epoch in range(1000):
             0/0
 
 
-        '''if counter == 5:
+        if counter == 500:
             break
         else:
-            counter += 1'''
+            counter += 1
 
 
         #n += 1
@@ -78,8 +79,8 @@ for epoch in range(1000):
         #ave = incremental_average(ave, loss.item(), n)
         pbar.set_description(f'Loss - {loss.item()}')
     #print()
-    scheduler.step(epoch_loss/1000)
-    print(f'\nEpoch loss: {epoch_loss/1000}')
+    #scheduler.step(epoch_loss/10)
+    print(f'\nEpoch loss: {epoch_loss/500}')
     print('Model predictions: ')
     model.eval()
     with torch.no_grad():
