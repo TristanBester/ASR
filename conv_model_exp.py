@@ -70,6 +70,7 @@ for epoch in range(1000):
         else:
             counter += 1'''
 
+
         #n += 1
         #if not torch.isnan(loss):
         #ave = incremental_average(ave, loss.item(), n)
