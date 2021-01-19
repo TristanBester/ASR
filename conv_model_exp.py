@@ -78,7 +78,7 @@ for epoch in range(1000):
         #ave = incremental_average(ave, loss.item(), n)
         pbar.set_description(f'Loss - {loss.item()}')
     #print()
-    #scheduler.step()
+    scheduler.step(epoch_loss/1000)
     print(f'\nEpoch loss: {epoch_loss/1000}')
     print('Model predictions: ')
     model.eval()
