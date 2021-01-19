@@ -44,10 +44,10 @@ for epoch in range(1000):
         loss.backward()
         optimizer.step()
 
-        if counter == 5:
+        '''if counter == 5:
             break
         else:
-            counter += 1
+            counter += 1'''
 
         #n += 1
         #if not torch.isnan(loss):
