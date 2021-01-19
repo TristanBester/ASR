@@ -29,7 +29,7 @@ for epoch in range(1000):
     model.train()
     counter = 0
     epoch_loss = 0
-    for specs, labels, label_lens in pbar:
+    for specs, labels, label_lens in data_loader:
         specs = specs.to(device)
         labels = labels.to(device)
         label_lens = label_lens.to(device)
@@ -44,8 +44,10 @@ for epoch in range(1000):
         loss = ctc_loss(outputs, labels, output_lens, label_lens)
         loss.backward()
         optimizer.step()
+        print(torch.isnan(loss))
         print(loss.item())
         epoch_loss += loss.item()
+
 
         '''if counter == 5:
             break
@@ -55,7 +57,7 @@ for epoch in range(1000):
         #n += 1
         #if not torch.isnan(loss):
         #ave = incremental_average(ave, loss.item(), n)
-        pbar.set_description(f'Loss - {loss.item()}')
+        #pbar.set_description(f'Loss - {loss.item()}')
     #print()
     #scheduler.step()
     print(f'Epoch loss: {epoch_loss/1000}')
