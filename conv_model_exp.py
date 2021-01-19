@@ -70,27 +70,6 @@ for epoch in range(1000):
         else:
             counter += 1'''
 
-
-        Labels:  tensor([[19, 20,  1, 25, 27, 20, 21, 14,  5,  4]], device='cuda:0')
-Outputs:  tensor([[[ -2.0903,  -1.5693,  -2.5245,  ...,  -4.3433, -19.4653, -16.1507]],
-
-        [[ -0.3200,  -2.8227, -14.2828,  ...,  -5.8927, -26.4086, -11.1849]],
-
-        [[ -1.5300,  -2.3656, -16.3346,  ..., -14.9188, -20.4127,  -2.7846]],
-
-        ...,
-
-        [[  0.0000,     -inf,     -inf,  ...,     -inf,     -inf,     -inf]],
-
-        [[  0.0000,     -inf,     -inf,  ...,     -inf,     -inf,     -inf]],
-
-        [[     nan,      nan,      nan,  ...,      nan,      nan,      nan]]],
-       device='cuda:0', grad_fn=<PermuteBackward>)
-Traceback (most recent call last):
-  File "conv_model_exp.py", line 56, in <module>
-    0/0
-ZeroDivisionError: division by zero
-
         #n += 1
         #if not torch.isnan(loss):
         #ave = incremental_average(ave, loss.item(), n)
