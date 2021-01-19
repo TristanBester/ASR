@@ -198,7 +198,7 @@ class ShallowConv(nn.Module):
         x = F.relu(self.conv_3(x))
         x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
         x = F.relu(self.fc_1(x))
-        h0 = torch.zeros(5, x.shape[0], 128)
+        h0 = torch.zeros(5, x.shape[0], 128).cuda()
         x, h_l = self.rnn(x, h0)
         x = self.classifier(x)
         return x # batch, time, class
