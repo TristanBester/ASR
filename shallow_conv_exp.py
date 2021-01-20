@@ -14,8 +14,8 @@ data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 
 device = torch.device('cuda')
 model = ShallowConv().to(device)
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1,
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5,
                                                  patience=2, min_lr=10e-8, verbose=True)
 ctc_loss = nn.CTCLoss(zero_infinity=True).to(device)
 
