@@ -42,7 +42,7 @@ for epoch in range(100):
         optimizer.step()
         n += 1
         epoch_loss += loss.item()
-        loader.set_description(loss.item())
+        loader.set_description(str(loss.item()))
 
     print(f'\nEpoch loss: {epoch_loss/n}')
     print('Model predictions: ')
