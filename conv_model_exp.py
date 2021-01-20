@@ -24,6 +24,8 @@ optimizer = optim.Adam(model.parameters(), lr=0.0001)
 #                                                 patience=10, min_lr=10e-10, verbose=True)
 ctc_loss = nn.CTCLoss(zero_infinity=True).to(device)
 
+############# successfully learnt 500 words in 300 epochs ######################
+
 for epoch in range(10000):
     print(f'Epoch: {epoch}')
     n = 0
