@@ -161,7 +161,7 @@ class ConvModel(nn.Module):
         x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
         x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
         x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
-        h0 = torch.zeros(2, x.shape[0], 512)
+        h0 = torch.zeros(2, x.shape[0], 512).cuda()
         x, h_l = self.rnn(x, h0)
         x = self.classifier(x)
         return x # batch, time, class
