@@ -1,0 +1,9 @@
+1) ShallowConv model successfully converged on the first 500 sentences of the 
+top_thou dataset. 
+
+exp:
+optim - Adam lr = 0.0001
+lr_scheduler - None
+epochs - ~300 to converge
+file - conv_model_exp.py
+
