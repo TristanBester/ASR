@@ -12,8 +12,8 @@ decoder = Decoder()
 dataset = SoundClipDataset(csv_path='short_clips.csv', data_root='short_clips')
 data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 
-device = torch.device('cpu')
-model = ConvModel().to(device)
+device = torch.device('cuda')
+model = OtherModel().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1,
                                                  patience=2, min_lr=10e-8, verbose=True)
