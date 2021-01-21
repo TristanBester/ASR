@@ -7,3 +7,27 @@ lr_scheduler - None
 epochs - ~300 to converge
 file - conv_model_exp.py
 
+PHASE 1 EXPERIMENTS:
+Dataset - short_clips => 41000 clips
+
+1) Shallow conv:
+	file - shallow_conv_exp.py
+	epochs - 19
+	loss - 2.981
+	result - The network did not converge as fast as other networks, 
+		loss was at 2.981 and has stagnated. The network may have
+		been in the phase of refining output activations before having
+		observation specific outputs be generated, but at the time of
+		stopping it was only outputting "ghe" for all samples.
+
+
+2) Standard conv:
+	file - standard_conv_exp.py
+	epochs - 20
+	loss - 0.95
+	result - The network was able to reach a loss of 0.95 and showed 
+		 strong evidence of learning. The network will most likely
+		 converge to a good solution if trained fully.
+
+
+
