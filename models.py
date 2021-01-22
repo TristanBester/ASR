@@ -204,18 +204,295 @@ class ShallowConv(nn.Module):
         return x # batch, time, class
 
 
+class NormConv(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(5,3), stride=(1,1))
+        self.max_pool_1 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_2 = nn.LayerNorm(normalized_shape=62)
+        self.conv_2 = nn.Conv2d(in_channels=32, out_channels=64,
+                                kernel_size=(5,3))
+        self.max_pool_2 = nn.MaxPool2d(kernel_size=(2,2))
 
 
+        self.layer_norm_3 = nn.LayerNorm(normalized_shape=29)
+        self.conv_3 = nn.Conv2d(in_channels=64, out_channels=128,
+                                kernel_size=(3,3))
 
 
+        self.layer_norm_4 = nn.LayerNorm(normalized_shape=27)
+        self.conv_4 = nn.Conv2d(in_channels=128, out_channels=128,
+                                kernel_size=(3,3))
+
+        self.fc_1 = nn.Linear(in_features=128*25, out_features=256)
+        self.fc_2 = nn.Linear(in_features=256, out_features=128)
+
+        self.rnn = nn.RNN(input_size=128, hidden_size=512, num_layers=2,
+                          batch_first=True, nonlinearity='tanh')
+
+        self.classifier = nn.Linear(in_features=512, out_features=28)
+
+    def forward(self, x):
+        x = x.permute(0, 1, 3, 2)
+        x = self.layer_norm_1(x)
+        x = x.permute(0, 1, 3, 2)
+        x = torch.clip(F.relu(self.conv_1(x)), min=0, max=20)
+        x = self.max_pool_1(x)
+
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_2(x)
+        x = x.permute(0,1,3,2)
+        x = torch.clip(F.relu(self.conv_2(x)), min=0, max=20)
+        x = self.max_pool_2(x)
+
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_3(x)
+        x = x.permute(0,1,3,2)
+        x = torch.clip(F.relu(self.conv_3(x)), min=0, max=20)
+
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_4(x)
+        x = x.permute(0,1,3,2)
+        x = torch.clip(F.relu(self.conv_4(x)), min=0, max=20)
+
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
+        x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
+
+        #h0 = torch.zeros(2, x.shape[0], 512).cuda()
+        h0 = torch.zeros(2, x.shape[0], 512)
+        x, h_l = self.rnn(x, h0)
+        x = self.classifier(x)
+        return x
 
 
+class LSTMConv(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(5,3), stride=(1,1))
+        self.max_pool_1 = nn.MaxPool2d(kernel_size=(2,2))
+        self.conv_2 = nn.Conv2d(in_channels=32, out_channels=64,
+                                kernel_size=(5,3))
+        self.max_pool_2 = nn.MaxPool2d(kernel_size=(2,2))
+        self.conv_3 = nn.Conv2d(in_channels=64, out_channels=128,
+                                kernel_size=(3,3))
+        self.conv_4 = nn.Conv2d(in_channels=128, out_channels=128,
+                                kernel_size=(3,3))
+
+        self.fc_1 = nn.Linear(in_features=128*25, out_features=256)
+        self.fc_2 = nn.Linear(in_features=256, out_features=128)
+
+        self.lstm = nn.LSTM(input_size=128, hidden_size=512, num_layers=2, batch_first=True)
+        self.classifier = nn.Linear(in_features=512, out_features=28)
+
+    def forward(self, x):
+        x = torch.clip(F.relu(self.conv_1(x)), min=0, max=20)
+        x = self.max_pool_1(x)
+        x = torch.clip(F.relu(self.conv_2(x)), min=0, max=20)
+        x = self.max_pool_2(x)
+        x = torch.clip(F.relu(self.conv_3(x)), min=0, max=20)
+        x = torch.clip(F.relu(self.conv_4(x)), min=0, max=20)
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
+        x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
+
+        h0 = torch.zeros(2, x.shape[0], 512)
+        c0 = torch.zeros(2, x.shape[0], 512)
+        x, _ = self.lstm(x, (h0, c0))
+        x = self.classifier(x)
+        return x
 
 
+class NormLSTMConv(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(5,3), stride=(1,1))
+        self.max_pool_1 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_2 = nn.LayerNorm(normalized_shape=62)
+        self.conv_2 = nn.Conv2d(in_channels=32, out_channels=64,
+                                kernel_size=(5,3))
+        self.max_pool_2 = nn.MaxPool2d(kernel_size=(2,2))
 
 
+        self.layer_norm_3 = nn.LayerNorm(normalized_shape=29)
+        self.conv_3 = nn.Conv2d(in_channels=64, out_channels=128,
+                                kernel_size=(3,3))
+
+        self.layer_norm_4 = nn.LayerNorm(normalized_shape=27)
+        self.conv_4 = nn.Conv2d(in_channels=128, out_channels=128,
+                                kernel_size=(3,3))
+
+        self.fc_1 = nn.Linear(in_features=128*25, out_features=256)
+        self.fc_2 = nn.Linear(in_features=256, out_features=128)
+
+        self.lstm = nn.LSTM(input_size=128, hidden_size=512, num_layers=2, batch_first=True)
+        self.classifier = nn.Linear(in_features=512, out_features=28)
+
+    def forward(self, x):
+        x = x.permute(0, 1, 3, 2)
+        x = self.layer_norm_1(x)
+        x = x.permute(0, 1, 3, 2)
+        x = torch.clip(F.relu(self.conv_1(x)), min=0, max=20)
+        x = self.max_pool_1(x)
+
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_2(x)
+        x = x.permute(0,1,3,2)
+        x = torch.clip(F.relu(self.conv_2(x)), min=0, max=20)
+        x = self.max_pool_2(x)
+
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_3(x)
+        x = x.permute(0,1,3,2)
+        x = torch.clip(F.relu(self.conv_3(x)), min=0, max=20)
+
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_4(x)
+        x = x.permute(0,1,3,2)
+        x = torch.clip(F.relu(self.conv_4(x)), min=0, max=20)
+
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
+        x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
+
+        h0 = torch.zeros(2, x.shape[0], 512)
+        c0 = torch.zeros(2, x.shape[0], 512)
+        x, _ = self.lstm(x, (h0, c0))
+        x = self.classifier(x)
+        return x
 
 
+class ResConv(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(5,3), stride=(1,1))
+        self.max_pool_1 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_2 = nn.LayerNorm(normalized_shape=62)
+        self.conv_2 = nn.Conv2d(in_channels=32, out_channels=64,
+                                kernel_size=(5,3))
+        self.max_pool_2 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_3 = nn.LayerNorm(normalized_shape=29)
+        self.rcv_1 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=1)
+        self.rcv_2 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=3,
+                              stride=1, padding=1)
+
+        self.layer_norm_4 = nn.LayerNorm(normalized_shape=29)
+        self.rcv_3 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=1)
+        self.rcv_4 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=3,
+                               stride=1, padding=1)
+
+        self.fc_1 = nn.Linear(in_features=64*29, out_features=256)
+        self.fc_2 = nn.Linear(in_features=256, out_features=128)
+
+        self.rnn = nn.RNN(input_size=128, hidden_size=512, num_layers=2,
+                          batch_first=True, nonlinearity='tanh')
+
+        self.classifier = nn.Linear(in_features=512, out_features=28)
+
+    def forward(self, x):
+        x = torch.clip(F.relu(self.conv_1(x)), min=0, max=20)
+        x = self.max_pool_1(x)
+        x = torch.clip(F.relu(self.conv_2(x)), min=0, max=20)
+        x = self.max_pool_2(x)
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_3(x)
+        x = x.permute(0,1,3,2)
+        x = F.relu(self.rcv_1(x))
+        x = F.relu(self.rcv_2(x))
+        x += residual
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        self.layer_norm_4(x)
+        x = x.permute(0,1,3,2)
+        x = F.relu(self.rcv_3(x))
+        x = F.relu(self.rcv_4(x))
+        x += residual
+
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = F.relu(self.fc_1(x))
+        x = F.relu(self.fc_2(x))
+
+        h0 = torch.zeros(2, x.shape[0], 512)
+        x, h_l = self.rnn(x, h0)
+        x = self.classifier(x)
+        return x
+
+
+class ResLSTM(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(5,3), stride=(1,1))
+        self.max_pool_1 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_2 = nn.LayerNorm(normalized_shape=62)
+        self.conv_2 = nn.Conv2d(in_channels=32, out_channels=64,
+                                kernel_size=(5,3))
+        self.max_pool_2 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_3 = nn.LayerNorm(normalized_shape=29)
+        self.rcv_1 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=1)
+        self.rcv_2 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=3,
+                              stride=1, padding=1)
+
+        self.layer_norm_4 = nn.LayerNorm(normalized_shape=29)
+        self.rcv_3 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=1)
+        self.rcv_4 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=3,
+                               stride=1, padding=1)
+
+        self.fc_1 = nn.Linear(in_features=64*29, out_features=256)
+        self.fc_2 = nn.Linear(in_features=256, out_features=128)
+
+        self.lstm = nn.LSTM(input_size=128, hidden_size=512, num_layers=2, batch_first=True)
+        self.classifier = nn.Linear(in_features=512, out_features=28)
+
+    def forward(self, x):
+        x = torch.clip(F.relu(self.conv_1(x)), min=0, max=20)
+        x = self.max_pool_1(x)
+        x = torch.clip(F.relu(self.conv_2(x)), min=0, max=20)
+        x = self.max_pool_2(x)
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_3(x)
+        x = x.permute(0,1,3,2)
+        x = F.relu(self.rcv_1(x))
+        x = F.relu(self.rcv_2(x))
+        x += residual
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        self.layer_norm_4(x)
+        x = x.permute(0,1,3,2)
+        x = F.relu(self.rcv_3(x))
+        x = F.relu(self.rcv_4(x))
+        x += residual
+
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = F.relu(self.fc_1(x))
+        x = F.relu(self.fc_2(x))
+
+        h0 = torch.zeros(2, x.shape[0], 512)
+        c0 = torch.zeros(2, x.shape[0], 512)
+        x, _ = self.lstm(x, (h0, c0))
+        x = self.classifier(x)
+        return x
+    
 
 
 
