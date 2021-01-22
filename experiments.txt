@@ -30,4 +30,15 @@ Dataset - short_clips => 41000 clips
 		 converge to a good solution if trained fully.
 
 
+3) Other model:
+	file - other_model_exp.py
+	epochs - 7
+	loss - 0.56
+	result - Best model out of group.
 
+4) Simple RNN:
+	file - simple_rnn_exp.py
+	epochs - 2
+	loss 2.9
+	result - Model failed to learn in earlier experiments so it is most
+		 likely going to fail again.
