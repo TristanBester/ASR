@@ -262,8 +262,7 @@ class NormConv(nn.Module):
         x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
         x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
 
-        #h0 = torch.zeros(2, x.shape[0], 512).cuda()
-        h0 = torch.zeros(2, x.shape[0], 512)
+        h0 = torch.zeros(2, x.shape[0], 512).cuda()
         x, h_l = self.rnn(x, h0)
         x = self.classifier(x)
         return x
@@ -300,8 +299,8 @@ class LSTMConv(nn.Module):
         x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
         x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
 
-        h0 = torch.zeros(2, x.shape[0], 512)
-        c0 = torch.zeros(2, x.shape[0], 512)
+        h0 = torch.zeros(2, x.shape[0], 512).cuda()
+        c0 = torch.zeros(2, x.shape[0], 512).cuda()
         x, _ = self.lstm(x, (h0, c0))
         x = self.classifier(x)
         return x
@@ -362,8 +361,8 @@ class NormLSTMConv(nn.Module):
         x = torch.clip(F.relu(self.fc_1(x)), min=0, max=20)
         x = torch.clip(F.relu(self.fc_2(x)), min=0, max=20)
 
-        h0 = torch.zeros(2, x.shape[0], 512)
-        c0 = torch.zeros(2, x.shape[0], 512)
+        h0 = torch.zeros(2, x.shape[0], 512).cuda()
+        c0 = torch.zeros(2, x.shape[0], 512).cuda()
         x, _ = self.lstm(x, (h0, c0))
         x = self.classifier(x)
         return x
@@ -426,7 +425,7 @@ class ResConv(nn.Module):
         x = F.relu(self.fc_1(x))
         x = F.relu(self.fc_2(x))
 
-        h0 = torch.zeros(2, x.shape[0], 512)
+        h0 = torch.zeros(2, x.shape[0], 512).cuda()
         x, h_l = self.rnn(x, h0)
         x = self.classifier(x)
         return x
@@ -487,12 +486,12 @@ class ResLSTM(nn.Module):
         x = F.relu(self.fc_1(x))
         x = F.relu(self.fc_2(x))
 
-        h0 = torch.zeros(2, x.shape[0], 512)
-        c0 = torch.zeros(2, x.shape[0], 512)
+        h0 = torch.zeros(2, x.shape[0], 512).cuda()
+        c0 = torch.zeros(2, x.shape[0], 512).cuda()
         x, _ = self.lstm(x, (h0, c0))
         x = self.classifier(x)
         return x
-    
+
 
 
 
