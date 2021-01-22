@@ -17,7 +17,7 @@ class TextEncoder():
         if x is not None:
             return [self.int_char_mapping[i] for i in x]
         else:
-            return [];
+            return []
 
 class Decoder():
     def __init__(self, blank_val=0):
@@ -33,16 +33,10 @@ class Decoder():
                 return x[:-i]
 
     def decode_labels(self, labels, pad_val=0):
+        # labels must first be detached and converted to numpy
         decoded_labels = []
         for label in labels:
-            #print(label)
             label = self.__strip_padding(label, pad_val)
-            #print(label)
-
-            #if len(label) == 0:
-            #    print('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
-
-
             decoded_labels.append(self.text_encoder.int_to_char(label))
         return self.collapse(decoded_labels)
 
@@ -61,7 +55,8 @@ class Decoder():
                 elif pred[i] != pred[i+1]:
                     greedy_pred.append(pred[i])
             greedy_preds.append(self.text_encoder.int_to_char(greedy_pred))
-        return greedy_preds
+        preds = [ '\'' + ''.join(pred) + '\'' for pred in greedy_preds]
+        return preds
 
     def collapse(self, ls):
         collapsed = [''] * len(ls)
