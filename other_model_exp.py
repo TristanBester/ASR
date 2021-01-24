@@ -16,10 +16,10 @@ device = torch.device('cuda')
 model = OtherModel().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1,
-                                                 patience=2, min_lr=10e-8, verbose=True)
+                                                 patience=1, min_lr=10e-8, verbose=True)
 ctc_loss = nn.CTCLoss(zero_infinity=True).to(device)
 
-for epoch in range(20):
+for epoch in range(7):
     n = 0
     epoch_loss = 0
     loader = tqdm(data_loader, position=0, leave=True, total=len(data_loader))

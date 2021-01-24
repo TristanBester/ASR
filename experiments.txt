@@ -42,3 +42,37 @@ Dataset - short_clips => 41000 clips
 	loss 2.9
 	result - Model failed to learn in earlier experiments so it is most
 		 likely going to fail again.
+
+
+PHASE 2 EXPERIMENTS:
+
+1) LayerNorm only:
+	file - norm_conv_exp.py
+	epochs - 7
+	loss - 2.542 
+
+2) LSTM only:
+	file - lstm_conv_exp.py
+	epochs - 7
+	loss - 1.516
+
+3) LSTM + LayerNorm:
+	file - lstm_norm_conv_exp.py
+	epochs - 7
+	loss - 1.379 
+
+
+4) Residual blocks:
+	file - res_conv_exp.py
+	epochs - 7
+	loss - 1.443 
+
+5) Res + LSTM + LayerNorm:
+	file - res_lstm_conv_exp.py
+	epochs - 7
+	loss - 1.139
+
+6) Other model:
+	file - 
+	epochs - 7
+	loss - 
