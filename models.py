@@ -632,26 +632,10 @@ class OtherFeatureExtractor(nn.Module):
         self.rnn_dim = rnn_dim
         self.fully_connected = nn.Linear(n_feats*32, rnn_dim)
 
-
-        self.lstm = nn.LSTM(input_size=rnn_dim, hidden_size=512, num_layers=2,
+        self.lstm = nn.LSTM(input_size=rnn_dim, hidden_size=512, num_layers=5,
                             batch_first=True)
         self.classifier = nn.Linear(in_features=512, out_features=28)
 
-
-
-
-
-        self.birnn_layers = nn.Sequential(*[
-            BidirectionalGRU(rnn_dim=rnn_dim if i==0 else rnn_dim*2,
-                             hidden_size=rnn_dim, dropout=dropout, batch_first=i==0)
-            for i in range(n_rnn_layers)
-        ])
-        self.classifier = nn.Sequential(
-            nn.Linear(rnn_dim*2, rnn_dim),  # birnn returns rnn_dim*2
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(rnn_dim, n_class)
-        )
 
     def forward(self, x):
         x = self.cnn(x)
@@ -660,9 +644,84 @@ class OtherFeatureExtractor(nn.Module):
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # (batch, feature, time)
         x = x.transpose(1, 2) # (batch, time, feature)
         x = self.fully_connected(x)
+
+        h0 = torch.zeros(5, x.shape[0], self.rnn_dim).cuda()
+        c0 = torch.zeros(5, x.shape[0], self.rnn_dim).cuda()
+        x, _ = self.lstm(x, (h0, c0))
+        x = self.classifier(x)
+        return x
+
+
+class OtherClassifier(nn.Module):
+    """Speech Recognition Model Inspired by DeepSpeech 2"""
+    def __init__(self, n_cnn_layers=3, n_rnn_layers=5, rnn_dim=512, n_class=29, n_feats=128, stride=2, dropout=0.1):
+        super(OtherModel, self).__init__()
+        n_feats = n_feats//2
+        self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(5,3), stride=(1,1))
+        self.max_pool_1 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_2 = nn.LayerNorm(normalized_shape=62)
+        self.conv_2 = nn.Conv2d(in_channels=32, out_channels=64,
+                                kernel_size=(5,3))
+        self.max_pool_2 = nn.MaxPool2d(kernel_size=(2,2))
+
+        self.layer_norm_3 = nn.LayerNorm(normalized_shape=29)
+        self.rcv_1 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=1)
+        self.rcv_2 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=3,
+                              stride=1, padding=1)
+
+        self.layer_norm_4 = nn.LayerNorm(normalized_shape=29)
+        self.rcv_3 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=1)
+        self.rcv_4 = nn.Conv2d(in_channels=64,out_channels=64, kernel_size=3,
+                               stride=1, padding=1)
+
+        self.fc_1 = nn.Linear(in_features=64*29, out_features=256)
+        self.fc_2 = nn.Linear(in_features=256, out_features=128)
+
+        self.birnn_layers = nn.Sequential(*[
+            BidirectionalGRU(rnn_dim=128 if i==0 else 128*2,
+                             hidden_size=512, dropout=dropout, batch_first=i==0)
+            for i in range(n_rnn_layers)
+        ])
+        self.classifier = nn.Sequential(
+            nn.Linear(512*2, 512),  # birnn returns rnn_dim*2
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(512, n_class)
+        )
+
+    def forward(self, x):
+        x = F.gelu(self.conv_1(x))
+        x = self.max_pool_1(x)
+        x = F.gelu(self.conv_2(x))
+        x = self.max_pool_2(x)
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_3(x)
+        x = x.permute(0,1,3,2)
+        x = F.gelu(self.rcv_1(x))
+        x = F.gelu(self.rcv_2(x))
+        x += residual
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        self.layer_norm_4(x)
+        x = x.permute(0,1,3,2)
+        x = F.gelu(self.rcv_3(x))
+        x = F.gelu(self.rcv_4(x))
+        x += residual
+
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = F.gelu(self.fc_1(x))
+        x = F.gelu(self.fc_2(x))
+        
         x = self.birnn_layers(x)
         x = self.classifier(x)
         return x
+# end of other model.
 
 
 
