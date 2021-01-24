@@ -520,7 +520,7 @@ class BidirectionalLSTM(nn.Module):
 
         self.lstm = nn.LSTM(input_size=128, hidden_size=512, num_layers=5,
                             bidirectional=True, batch_first=True)
-        self.classifier = nn.Linear(in_features=512, out_features=28)
+        self.classifier = nn.Linear(in_features=512*2, out_features=28)
 
     def forward(self, x):
         x = torch.clip(F.relu(self.conv_1(x)), min=0, max=20)
@@ -583,7 +583,7 @@ class GELUModel(nn.Module):
 
         self.lstm = nn.LSTM(input_size=128, hidden_size=512, num_layers=2,
                             batch_first=True)
-        self.classifier = nn.Linear(in_features=512*2, out_features=28)
+        self.classifier = nn.Linear(in_features=512, out_features=28)
 
     def forward(self, x):
         x = F.gelu(self.conv_1(x))
