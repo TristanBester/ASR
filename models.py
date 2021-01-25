@@ -620,7 +620,7 @@ class GELUModel(nn.Module):
 
 class OtherFeatureExtractor(nn.Module):
     def __init__(self, n_cnn_layers=3, n_rnn_layers=5, rnn_dim=512, n_class=29, n_feats=128, stride=2, dropout=0.1):
-        super(OtherModel, self).__init__()
+        super(OtherFeatureExtractor, self).__init__()
         n_feats = n_feats//2
         self.cnn = nn.Conv2d(1, 32, 3, stride=stride, padding=3//2)  # cnn for extracting heirachal features
 
@@ -717,7 +717,7 @@ class OtherClassifier(nn.Module):
         x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
         x = F.gelu(self.fc_1(x))
         x = F.gelu(self.fc_2(x))
-        
+
         x = self.birnn_layers(x)
         x = self.classifier(x)
         return x
