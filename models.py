@@ -678,13 +678,20 @@ class OtherClassifier(nn.Module):
                                stride=1, padding=1)
 
         self.fc_1 = nn.Linear(in_features=64*29, out_features=256)
-        self.fc_2 = nn.Linear(in_features=256, out_features=128)
-
+        #self.fc_2 = nn.Linear(in_features=256, out_features=128)
+        rnn_dim=512
+        self.fully_connected = nn.Linear(256, rnn_dim)
         self.birnn_layers = nn.Sequential(*[
+            BidirectionalGRU(rnn_dim=rnn_dim if i==0 else rnn_dim*2,
+                             hidden_size=rnn_dim, dropout=dropout, batch_first=i==0)
+            for i in range(n_rnn_layers)
+        ])
+
+        '''self.birnn_layers = nn.Sequential(*[
             BidirectionalGRU(rnn_dim=128 if i==0 else 128*2,
                              hidden_size=512, dropout=dropout, batch_first=i==0)
             for i in range(n_rnn_layers)
-        ])
+        ])'''
         self.classifier = nn.Sequential(
             nn.Linear(512*2, 512),  # birnn returns rnn_dim*2
             nn.GELU(),
@@ -716,7 +723,7 @@ class OtherClassifier(nn.Module):
 
         x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
         x = F.gelu(self.fc_1(x))
-        x = F.gelu(self.fc_2(x))
+        x = F.gelu(self.fully_connected(x))
 
         x = self.birnn_layers(x)
         x = self.classifier(x)
