@@ -848,7 +848,7 @@ class UnidirectionalGRU(nn.Module):
         self.BiGRU = nn.GRU(
             input_size=rnn_dim, hidden_size=hidden_size,
             num_layers=1, batch_first=batch_first, bidirectional=False)
-        self.layer_norm = nn.LayerNorm(rnn_dim//2)
+        self.layer_norm = nn.LayerNorm(512)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -887,10 +887,10 @@ class UnidirectionalModel(nn.Module):
         self.fc_1 = nn.Linear(in_features=64*29, out_features=256)
         #self.fc_2 = nn.Linear(in_features=256, out_features=128)
         rnn_dim=512
-        self.fully_connected = nn.Linear(256, rnn_dim)
+        self.fully_connected = nn.Linear(256, 512)
         self.birnn_layers = nn.Sequential(*[
-            UnidirectionalGRU(rnn_dim=rnn_dim if i==0  else rnn_dim,
-                             hidden_size=rnn_dim,
+            UnidirectionalGRU(rnn_dim=512 if i==0  else 512,
+                             hidden_size=512,
                              dropout=dropout,
                              batch_first=i==0)
             for i in range(n_rnn_layers)
