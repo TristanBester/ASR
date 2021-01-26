@@ -757,7 +757,7 @@ class DeepLSTM(nn.Module):
         self.fc_1 = nn.Linear(in_features=64*29, out_features=512)
 
         self.lstm = nn.LSTM(input_size=512, hidden_size=512, num_layers=5,
-                            batch_first=True, nonlinearity='relu')
+                            batch_first=True)
         self.classifier = nn.Linear(in_features=512, out_features=28)
 
     def forward(self, x):
