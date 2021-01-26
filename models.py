@@ -793,6 +793,55 @@ class DeepLSTM(nn.Module):
 
 
 
+class ShallowGRU(nn.Module):
+    """Speech Recognition Model Inspired by DeepSpeech 2"""
+    def __init__(self, n_cnn_layers=3, n_rnn_layers=5, rnn_dim=512, n_class=29, n_feats=128, stride=2, dropout=0.1):
+        super(ShallowGRU, self).__init__()
+        n_feats = n_feats//2
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(3,3), stride=(1,1))
+
+        self.layer_norm_3 = nn.LayerNorm(normalized_shape=126)
+        self.rcv_1 = nn.Conv2d(in_channels=32,out_channels=32, kernel_size=1)
+        self.rcv_2 = nn.Conv2d(in_channels=32,out_channels=32, kernel_size=3,
+                               stride=1, padding=1)
+
+        rnn_dim=512
+        self.fully_connected = nn.Linear(32*126, rnn_dim)
+
+        self.birnn_layers = nn.Sequential(*[
+            BidirectionalGRU(rnn_dim=rnn_dim if i==0 else rnn_dim*2,
+                             hidden_size=rnn_dim, dropout=dropout, batch_first=i==0)
+            for i in range(n_rnn_layers)
+        ])
+
+        self.classifier = nn.Sequential(
+            nn.Linear(512*2, 512),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(512, n_class)
+        )
+
+    def forward(self, x):
+        x = F.gelu(self.conv_1(x))
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_3(x)
+        x = x.permute(0,1,3,2)
+        x = F.gelu(self.rcv_1(x))
+        x = F.gelu(self.rcv_2(x))
+        x += residual
+
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = F.gelu(self.fully_connected(x))
+
+        x = self.birnn_layers(x)
+        x = self.classifier(x)
+        return x
+
+
+
 
 
 
