@@ -848,7 +848,7 @@ class UnidirectionalGRU(nn.Module):
         self.BiGRU = nn.GRU(
             input_size=rnn_dim, hidden_size=hidden_size,
             num_layers=1, batch_first=batch_first, bidirectional=False)
-        self.layer_norm = nn.LayerNorm(rnn_dim)
+        self.layer_norm = nn.LayerNorm(512)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
