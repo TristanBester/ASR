@@ -843,7 +843,7 @@ class ShallowGRU(nn.Module):
 
 class UnidirectionalGRU(nn.Module):
     def __init__(self, rnn_dim, hidden_size, dropout, batch_first):
-        super(BidirectionalGRU, self).__init__()
+        super(UnidirectionalGRU, self).__init__()
 
         self.BiGRU = nn.GRU(
             input_size=rnn_dim, hidden_size=hidden_size,
