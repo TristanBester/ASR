@@ -73,6 +73,26 @@ PHASE 2 EXPERIMENTS:
 	loss - 1.139
 
 6) Other model:
-	file - 
+	file - other_model_exp.py
 	epochs - 7
-	loss - 
+	loss - 0.5???
+
+7) Bidirectional LSTM:
+	file - bidir_lstm_exp.py
+	epochs - 7
+	loss - 2.137
+
+8) Gelu model:
+	file - gelu_model_exp.py
+	epochs - 7
+	loss - 0.811
+
+9) Other feature extractor:
+	file - other_feature_extractor_exp.py
+	epochs - 7
+	loss - 2.530
+
+10) Other classifier:
+	file - other_classifier_exp.py
+	epochs - 7
+	loss - 0.667
