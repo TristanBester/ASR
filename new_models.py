@@ -84,7 +84,7 @@ class BaselineModel(nn.Module):
         self.res_4 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
         self.res_5 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
         self.res_6 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
-        self.fc_1 = nn.Linear(32 * 128, 512)
+        self.fc_1 = nn.Linear(32 * 64, 512)
         self.gru = nn.GRU(input_size=512, hidden_size=512, num_layers=5,
                           batch_first=True, dropout=0.1, bidirectional=True)
         self.fc_2 = nn.Linear(1024, 512)
