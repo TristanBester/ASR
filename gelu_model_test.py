@@ -4,17 +4,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from dataset import SoundClipDataset, collate_fn
-from new_models import BaselineModel
+from new_models import ModelGelu
 #from models import OtherModel
 from tqdm import tqdm
 from utils import Decoder
 
 decoder = Decoder()
-dataset = SoundClipDataset(csv_path='prepared_csv/short_clips.csv', data_root='short_clips')
+dataset = SoundClipDataset(csv_path='short_clips.csv', data_root='short_clips')
 data_loader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
 
-device = torch.device('cpu')
-model = BaselineModel().to(device)
+device = torch.device('cuda')
+model = ModelGelu().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5,
                                                  patience=2, min_lr=10e-8, verbose=True)
