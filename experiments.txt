@@ -75,7 +75,7 @@ PHASE 2 EXPERIMENTS:
 6) Other model:
 	file - other_model_exp.py
 	epochs - 7
-	loss - 0.5???
+	loss - 0.56
 
 7) Bidirectional LSTM:
 	file - bidir_lstm_exp.py
@@ -96,3 +96,28 @@ PHASE 2 EXPERIMENTS:
 	file - other_classifier_exp.py
 	epochs - 7
 	loss - 0.667
+
+11) Deep LSTM:
+	file - deep_lstm_exp.py
+	epochs - 7
+	loss - 2.561
+
+12) Shallow GRU:
+	file - shallow_gru_exp.py	
+	epochs - 7 
+	loss - ~0.711
+
+13) Unidirectional GRU with my feature extractor:
+	file - uni_model_exp.py
+	epochs - 7
+	loss - 1.425
+
+14) Other model deeper CNN:
+	file - other_model_deeper_exp.py
+	epochs - 7
+	loss - 0.4968
+
+15) Other model deeper GRU:
+	file - other_model_deeper_gru_exp.py
+	epochs - 7
+	loss - 2.500
