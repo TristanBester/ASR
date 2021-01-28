@@ -77,7 +77,7 @@ class ResidualBlockGelu(nn.Module):
 class BaselineModel(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv_1 = nn.Conv2d(1, 32, 1, 1)
+        self.conv_1 = nn.Conv2d(1, 32, 3, stride=2, padding=3//2)
         self.res_1 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
         self.res_2 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
         self.res_3 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
