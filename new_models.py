@@ -78,12 +78,12 @@ class BaselineModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv_1 = nn.Conv2d(1, 32, 3, stride=2, padding=3//2)
-        self.res_1 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
-        self.res_2 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
-        self.res_3 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
-        self.res_4 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
-        self.res_5 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
-        self.res_6 = ResidualBlockGelu(32, 3, 1, 0.1, 128)
+        self.res_1 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_2 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_3 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_4 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_5 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_6 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
         self.fc_1 = nn.Linear(32 * 128, 512)
         self.gru = nn.GRU(input_size=512, hidden_size=512, num_layers=5,
                           batch_first=True, dropout=0.1, bidirectional=True)
