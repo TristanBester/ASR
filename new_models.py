@@ -227,7 +227,153 @@ class OtherModel(nn.Module):
         return x
 # end of other model.
 
+class PreActivationResidualRelu(nn.Module):
+    def __init__(self, channels, kernel_size, stride, dropout_p, n_freq):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(in_channels=channels, out_channels=channels,
+                                kernel_size=1)
+        self.conv_2 = nn.Conv2d(in_channels=channels, out_channels=channels,
+                                kernel_size=kernel_size, stride=stride,
+                                padding=True)
+        self.layer_norm_1 = nn.LayerNorm(n_freq)
+        self.layer_norm_2 = nn.LayerNorm(n_freq)
+        self.dropout_1 = nn.Dropout(p=dropout_p)
+        self.dropout_2 = nn.Dropout(p=dropout_p)
 
+    def forward(self, x):
+        identity = x
+        x = self.layer_norm_1(x)
+        x = F.relu(x)
+        x = self.dropout_1(x)
+        x = self.conv_1(x)
+        x = self.layer_norm_2(x)
+        x = F.relu(x)
+        x = self.dropout_2(x)
+        x = self.conv_2(x)
+        x += identity
+        return x
+
+class PreActivationResidualGelu(nn.Module):
+    def __init__(self, channels, kernel_size, stride, dropout_p, n_freq):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(in_channels=channels, out_channels=channels,
+                                kernel_size=1)
+        self.conv_2 = nn.Conv2d(in_channels=channels, out_channels=channels,
+                                kernel_size=kernel_size, stride=stride,
+                                padding=True)
+        self.layer_norm_1 = nn.LayerNorm(n_freq)
+        self.layer_norm_2 = nn.LayerNorm(n_freq)
+        self.dropout_1 = nn.Dropout(p=dropout_p)
+        self.dropout_2 = nn.Dropout(p=dropout_p)
+
+    def forward(self, x):
+        identity = x
+        x = self.layer_norm_1(x)
+        x = F.gelu(x)
+        x = self.dropout_1(x)
+        x = self.conv_1(x)
+        x = self.layer_norm_2(x)
+        x = F.gelu(x)
+        x = self.dropout_2(x)
+        x = self.conv_2(x)
+        x += identity
+        return x
+
+
+
+class ModelPreResRelu(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(1, 32, 3, stride=2, padding=3//2)
+        self.res_1 = PreActivationResidualRelu(32, 3, 1, 0.1, 128//2)
+        self.res_2 = PreActivationResidualRelu(32, 3, 1, 0.1, 128//2)
+        self.res_3 = PreActivationResidualRelu(32, 3, 1, 0.1, 128//2)
+        self.res_4 = PreActivationResidualRelu(32, 3, 1, 0.1, 128//2)
+        self.res_5 = PreActivationResidualRelu(32, 3, 1, 0.1, 128//2)
+        self.res_6 = PreActivationResidualRelu(32, 3, 1, 0.1, 128//2)
+        self.fc_1 = nn.Linear(32 * 64, 512)
+
+        self.birnn_layers = nn.Sequential(*[
+            BidirectionalGRU(rnn_dim=512 if i==0 else 512*2,
+                             hidden_size=512, dropout=0.1, batch_first=i==0)
+            for i in range(5)
+        ])
+
+        self.classifier = nn.Sequential(
+            nn.Linear(512*2, 512),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(512, 28)
+        )
+
+    def forward(self, x):
+        start_time = time.time()
+        x = x.permute(0,1,3,2)
+        x = F.gelu(self.conv_1(x))
+        x = self.res_1(x)
+        x = self.res_2(x)
+        x = self.res_3(x)
+        x = self.res_4(x)
+        x = self.res_5(x)
+        x = self.res_6(x)
+        x = x.permute(0,2,1,3).flatten(start_dim=2)
+        x = F.gelu(self.fc_1(x))
+        x = self.birnn_layers(x)
+        x = self.classifier(x)
+        return x
+
+class ModelPreResGelu(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(1, 32, 3, stride=2, padding=3//2)
+        self.res_1 = PreActivationResidualGelu(32, 3, 1, 0.1, 128//2)
+        self.res_2 = PreActivationResidualGelu(32, 3, 1, 0.1, 128//2)
+        self.res_3 = PreActivationResidualGelu(32, 3, 1, 0.1, 128//2)
+        self.res_4 = PreActivationResidualGelu(32, 3, 1, 0.1, 128//2)
+        self.res_5 = PreActivationResidualGelu(32, 3, 1, 0.1, 128//2)
+        self.res_6 = PreActivationResidualGelu(32, 3, 1, 0.1, 128//2)
+        self.fc_1 = nn.Linear(32 * 64, 512)
+
+        self.birnn_layers = nn.Sequential(*[
+            BidirectionalGRU(rnn_dim=512 if i==0 else 512*2,
+                             hidden_size=512, dropout=0.1, batch_first=i==0)
+            for i in range(5)
+        ])
+
+        self.classifier = nn.Sequential(
+            nn.Linear(512*2, 512),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(512, 28)
+        )
+
+    def forward(self, x):
+        start_time = time.time()
+        x = x.permute(0,1,3,2)
+        x = F.gelu(self.conv_1(x))
+        x = self.res_1(x)
+        x = self.res_2(x)
+        x = self.res_3(x)
+        x = self.res_4(x)
+        x = self.res_5(x)
+        x = self.res_6(x)
+        x = x.permute(0,2,1,3).flatten(start_dim=2)
+        x = F.gelu(self.fc_1(x))
+        x = self.birnn_layers(x)
+        x = self.classifier(x)
+        return x
+
+
+
+
+
+
+
+
+
+
+
+###############################################################################
 class ModelGelu(nn.Module):
     def __init__(self):
         super().__init__()
@@ -309,6 +455,53 @@ class ModelRelu(nn.Module):
         x = self.birnn_layers(x)
         x = self.classifier(x)
         return x
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
