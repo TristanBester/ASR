@@ -290,13 +290,6 @@ class WideResNet(nn.Module):
 
 
 
-if __name__ == '__main__':
-    x = torch.randn(1, 1, 100, 128)
-    net = WideResNet()
-    net(x)
-
-
-
 
 
 
