@@ -288,7 +288,40 @@ class WideResNet(nn.Module):
         x = self.classifier(x)
         return x
 
+class OtherCNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        n_feats = 128//2
+        rnn_dim = 512
+        self.cnn = nn.Conv2d(1, 32, 3, stride=2, padding=3//2)
 
+        self.res_1 = ResidualCNN(32, 32, kernel=3, stride=1, dropout=0.1, n_feats=64)
+        self.res_2 = ResidualCNN(32, 32, kernel=3, stride=1, dropout=0.1, n_feats=64)
+
+        self.fully_connected = nn.Linear(n_feats*32, rnn_dim)
+        self.birnn_layers = nn.Sequential(*[
+            BidirectionalGRU(rnn_dim=rnn_dim if i==0 else rnn_dim*2,
+                             hidden_size=rnn_dim, dropout=dropout, batch_first=i==0)
+            for i in range(n_rnn_layers)
+        ])
+        self.classifier = nn.Sequential(
+            nn.Linear(rnn_dim*2, rnn_dim),  # birnn returns rnn_dim*2
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(rnn_dim, n_class)
+        )
+
+    def forward(self, x):
+        x = self.cnn(x)
+        x = self.res_1(x)
+        x = self.res_2(x)
+        sizes = x.size()
+        x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # (batch, feature, time)
+        x = x.transpose(1, 2) # (batch, time, feature)
+        x = self.fully_connected(x)
+        x = self.birnn_layers(x)
+        x = self.classifier(x)
+        return x
 
 
 
