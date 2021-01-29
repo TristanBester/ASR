@@ -74,64 +74,6 @@ class ResidualBlockGelu(nn.Module):
         x = self.dropout_2(x)
         return x
 
-
-class BaselineModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv_1 = nn.Conv2d(1, 32, 3, stride=2, padding=3//2)
-        self.res_1 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
-        self.res_2 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
-        self.res_3 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
-        self.res_4 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
-        self.res_5 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
-        self.res_6 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
-        self.fc_1 = nn.Linear(32 * 64, 512)
-        self.gru = nn.GRU(input_size=512, hidden_size=512, num_layers=1,
-                          batch_first=True, dropout=0.1, bidirectional=True)
-        self.gru2 = nn.GRU(input_size=1024, hidden_size=512, num_layers=1,
-                          batch_first=False, dropout=0.1, bidirectional=True)
-
-
-
-        self.fc_2 = nn.Linear(1024, 512)
-        self.dropout = nn.Dropout(0.1)
-        self.fc_3 = nn.Linear(512, 28)
-
-    def forward(self, x):
-        start_time = time.time()
-        x = x.permute(0,1,3,2)
-        x = F.relu(self.conv_1(x))
-        x = self.res_1(x)
-        x = self.res_2(x)
-        x = self.res_3(x)
-        x = self.res_4(x)
-        x = self.res_5(x)
-        x = self.res_6(x)
-        x = x.permute(0,2,1,3).flatten(start_dim=2)
-        x = F.gelu(self.fc_1(x))
-
-        #print(x.shape)
-
-        #print(f'CNN time - {start_time - time.time()}')
-        start_time = time.time()
-
-        print(x.shape)
-        x, _ = self.gru(x)
-        print(x.shape)
-        #for i in range(9):
-        #    x,_ = self.gru2(x)
-
-
-
-
-
-        #print(f'RNN time - {start_time -  time.time()}')
-        x = F.gelu(self.fc_2(x))
-        x = self.dropout(x)
-        x = self.fc_3(x)
-        return x
-
-
 class CNNLayerNorm(nn.Module):
     """Layer normalization built for cnns input"""
     def __init__(self, n_feats):
@@ -166,7 +108,6 @@ class ResidualCNN(nn.Module):
         x = self.cnn2(x)
         x += residual
         return x # (batch, channel, feature, time)
-
 
 class BidirectionalGRU(nn.Module):
     def __init__(self, rnn_dim, hidden_size, dropout, batch_first):
@@ -279,8 +220,105 @@ class PreActivationResidualGelu(nn.Module):
         x += identity
         return x
 
+class BasicBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, dropout_p):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(in_channels, out_channels, kernel_size,
+                                stride, padding=1)
+        self.conv_2 = nn.Conv2d(out_channels, out_channels, kernel_size,
+                                stride, padding=1)
+        self.dropout_1 = nn.Dropout(p=dropout_p)
+        self.dropout_2 =nn.Dropout(p=dropout_p)
+
+        if in_channels != out_channels:
+            self.projection = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride)
+
+    def forward(self, x):
+        identity = x
+        x = F.relu(x)
+        x = self.dropout_1(x)
+        x = self.conv_1(x)
+        x = F.relu(x)
+        x = self.dropout_2(x)
+        x = self.conv_2(x)
+
+        if hasattr(self, 'projection'):
+            identity = self.projection(identity)
+
+        x += identity
+        return x
 
 
+class WideResNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(1, 32, 3, 1)
+        self.block_1 = BasicBlock(32, 64, 3, 1, 0.2)
+        self.block_2 = BasicBlock(64, 64, 3, 1, 0.2)
+        self.block_3 = BasicBlock(64, 128, 3, 1, 0.2)
+        self.block_4 = BasicBlock(128, 128, 3, 1, 0.2)
+        self.avg_pool = nn.AvgPool2d(4)
+
+        self.fc = nn.Linear(31* 128, out_features=512)
+
+        self.birnn_layers = nn.Sequential(*[
+            BidirectionalGRU(rnn_dim=512 if i==0 else 512*2,
+                             hidden_size=512, dropout=0.1, batch_first=i==0)
+            for i in range(5)
+        ])
+
+        self.classifier = nn.Sequential(
+            nn.Linear(512*2, 512),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(512, 28)
+        )
+
+    def forward(self, x):
+        x = F.relu(self.conv_1(x))
+        x = self.block_1(x)
+        x = self.block_2(x)
+        x = self.block_3(x)
+        x = self.block_4(x)
+        x = self.avg_pool(x)
+        x = x.permute(0,2,1,3).flatten(start_dim=2)
+        x = self.fc(x)
+        x = self.birnn_layers(x)
+        x = self.classifier(x)
+        return x
+
+
+
+
+if __name__ == '__main__':
+    x = torch.randn(1, 1, 100, 128)
+    net = WideResNet()
+    net(x)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################################
 class ModelPreResRelu(nn.Module):
     def __init__(self):
         super().__init__()
@@ -358,18 +396,10 @@ class ModelPreResGelu(nn.Module):
         x = self.res_5(x)
         x = self.res_6(x)
         x = x.permute(0,2,1,3).flatten(start_dim=2)
-        x = F.gelu(self.fc_1(x))
+        x = self.fc_1(x)
         x = self.birnn_layers(x)
         x = self.classifier(x)
         return x
-
-
-
-
-
-
-
-
 
 
 
@@ -456,8 +486,61 @@ class ModelRelu(nn.Module):
         x = self.classifier(x)
         return x
 
+class BaselineModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv_1 = nn.Conv2d(1, 32, 3, stride=2, padding=3//2)
+        self.res_1 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_2 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_3 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_4 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_5 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.res_6 = ResidualBlockGelu(32, 3, 1, 0.1, 128//2)
+        self.fc_1 = nn.Linear(32 * 64, 512)
+        self.gru = nn.GRU(input_size=512, hidden_size=512, num_layers=1,
+                          batch_first=True, dropout=0.1, bidirectional=True)
+        self.gru2 = nn.GRU(input_size=1024, hidden_size=512, num_layers=1,
+                          batch_first=False, dropout=0.1, bidirectional=True)
 
 
+
+        self.fc_2 = nn.Linear(1024, 512)
+        self.dropout = nn.Dropout(0.1)
+        self.fc_3 = nn.Linear(512, 28)
+
+    def forward(self, x):
+        start_time = time.time()
+        x = x.permute(0,1,3,2)
+        x = F.relu(self.conv_1(x))
+        x = self.res_1(x)
+        x = self.res_2(x)
+        x = self.res_3(x)
+        x = self.res_4(x)
+        x = self.res_5(x)
+        x = self.res_6(x)
+        x = x.permute(0,2,1,3).flatten(start_dim=2)
+        x = F.gelu(self.fc_1(x))
+
+        #print(x.shape)
+
+        #print(f'CNN time - {start_time - time.time()}')
+        start_time = time.time()
+
+        print(x.shape)
+        x, _ = self.gru(x)
+        print(x.shape)
+        #for i in range(9):
+        #    x,_ = self.gru2(x)
+
+
+
+
+
+        #print(f'RNN time - {start_time -  time.time()}')
+        x = F.gelu(self.fc_2(x))
+        x = self.dropout(x)
+        x = self.fc_3(x)
+        return x
 
 
 
