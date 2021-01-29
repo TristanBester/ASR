@@ -301,7 +301,7 @@ class OtherCNN(nn.Module):
         self.fully_connected = nn.Linear(n_feats*32, rnn_dim)
         self.birnn_layers = nn.Sequential(*[
             BidirectionalGRU(rnn_dim=rnn_dim if i==0 else rnn_dim*2,
-                             hidden_size=rnn_dim, dropout=dropout, batch_first=i==0)
+                             hidden_size=rnn_dim, dropout=0.1, batch_first=i==0)
             for i in range(5)
         ])
         self.classifier = nn.Sequential(
