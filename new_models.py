@@ -307,7 +307,7 @@ class OtherCNN(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(rnn_dim*2, rnn_dim),  # birnn returns rnn_dim*2
             nn.GELU(),
-            nn.Dropout(dropout),
+            nn.Dropout(0.1),
             nn.Linear(rnn_dim, n_class)
         )
 
