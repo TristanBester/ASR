@@ -308,7 +308,7 @@ class OtherCNN(nn.Module):
             nn.Linear(rnn_dim*2, rnn_dim),  # birnn returns rnn_dim*2
             nn.GELU(),
             nn.Dropout(0.1),
-            nn.Linear(rnn_dim, n_class)
+            nn.Linear(rnn_dim, 28)
         )
 
     def forward(self, x):
