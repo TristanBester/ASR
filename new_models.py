@@ -275,6 +275,7 @@ class WideResNet(nn.Module):
         )
 
     def forward(self, x):
+        x = x.permute(0,1,3,2)
         x = F.relu(self.conv_1(x))
         x = self.block_1(x)
         x = self.block_2(x)
