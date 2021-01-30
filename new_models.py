@@ -248,18 +248,18 @@ class BasicBlock(nn.Module):
         x += identity
         return x
 
-
+###############################################################################
 class WideResNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv_1 = nn.Conv2d(1, 32, 3, 1)
         self.block_1 = BasicBlock(32, 64, 3, 1, 0.2)
         self.block_2 = BasicBlock(64, 64, 3, 1, 0.2)
-        self.block_3 = BasicBlock(64, 128, 3, 1, 0.2)
-        self.block_4 = BasicBlock(128, 128, 3, 1, 0.2)
+        self.block_3 = BasicBlock(64, 64, 3, 1, 0.2)
+        self.block_4 = BasicBlock(64, 64, 3, 1, 0.2)
         self.avg_pool = nn.AvgPool2d(4)
 
-        self.fc = nn.Linear(31* 128, out_features=512)
+        self.fc = nn.Linear(31* 64, out_features=512)
 
         self.birnn_layers = nn.Sequential(*[
             BidirectionalGRU(rnn_dim=512 if i==0 else 512*2,
@@ -323,29 +323,6 @@ class OtherCNN(nn.Module):
         x = self.classifier(x)
         return x
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###############################################################################
 class ModelPreResRelu(nn.Module):
     def __init__(self):
         super().__init__()
@@ -428,9 +405,6 @@ class ModelPreResGelu(nn.Module):
         x = self.classifier(x)
         return x
 
-
-
-###############################################################################
 class ModelGelu(nn.Module):
     def __init__(self):
         super().__init__()
@@ -570,12 +544,10 @@ class BaselineModel(nn.Module):
         return x
 
 
-
-
 ###############################################################################
 class OtherClassifier2(nn.Module):
     """Speech Recognition Model Inspired by DeepSpeech 2"""
-    def __init__(self, n_cnn_layers=6, n_rnn_layers=3, rnn_dim=512, n_class=29, n_feats=128, stride=2, dropout=0.1):
+    def __init__(self, n_cnn_layers=6, n_rnn_layers=7, rnn_dim=512, n_class=29, n_feats=128, stride=2, dropout=0.1):
         super().__init__()
         n_feats = n_feats//2
         self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
@@ -599,7 +571,7 @@ class OtherClassifier2(nn.Module):
                                stride=1, padding=1)
 
         self.fc_1 = nn.Linear(in_features=64*29, out_features=256)
-        #self.fc_2 = nn.Linear(in_features=256, out_features=128)
+
         rnn_dim=512
         self.fully_connected = nn.Linear(256, rnn_dim)
         self.birnn_layers = nn.Sequential(*[
