@@ -555,7 +555,7 @@ class BidirectionalLSTM(nn.Module):
         return x
 
 
-    class GELUModel(nn.Module):
+class GELUModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
