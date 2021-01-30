@@ -576,7 +576,7 @@ class BaselineModel(nn.Module):
 class OtherClassifier2(nn.Module):
     """Speech Recognition Model Inspired by DeepSpeech 2"""
     def __init__(self, n_cnn_layers=6, n_rnn_layers=3, rnn_dim=512, n_class=29, n_feats=128, stride=2, dropout=0.1):
-        super(OtherClassifier, self).__init__()
+        super().__init__()
         n_feats = n_feats//2
         self.layer_norm_1 = nn.LayerNorm(normalized_shape=128)
         self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
