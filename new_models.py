@@ -801,7 +801,7 @@ class OtherClassifierMod(nn.Module):
         x = F.gelu(self.fc_1(x))
         x = F.gelu(self.fully_connected(x))
 
-        x = self.birnn_layers(x)
+        x, _ = self.birnn_layers(x)
         x = self.classifier(x)
         return x
 # end of other model.
