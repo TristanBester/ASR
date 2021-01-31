@@ -962,46 +962,20 @@ class ShallowGRU2(nn.Module):
         rnn_dim=512
         self.fully_connected = nn.Linear(32*126, rnn_dim)
 
-        self.gru_1 = nn.GRU(input_size=rnn_dim,
-                            hidden_size=rnn_dim,
-                            batch_first=True,
-                            bidirectional=True)
-        self.layer_norm_1 = nn.LayerNorm(rnn_dim)
-        self.dropout_1 = nn.Dropout(p=0.1)
 
-        self.gru_2 = nn.GRU(input_size=rnn_dim*2,
-                            hidden_size=rnn_dim,
-                            batch_first=True,
-                            bidirectional=True)
-        self.layer_norm_2 = nn.LayerNorm(rnn_dim*2)
-        self.dropout_2 = nn.Dropout(p=0.1)
+        self.gru = nn.GRU(input_size=rnn_dim,
+                          hidden_size=rnn_dim,
+                          num_layers=3,
+                          batch_first=True,
+                          dropout=0.1)
 
-        self.gru_3 = nn.GRU(input_size=rnn_dim*2,
-                            hidden_size=rnn_dim,
-                            batch_first=True,
-                            bidirectional=True)
-        self.layer_norm_3 = nn.LayerNorm(rnn_dim*2)
-        self.dropout_3 = nn.Dropout(p=0.1)
 
-        self.gru_4 = nn.GRU(input_size=rnn_dim*2,
-                            hidden_size=rnn_dim,
-                            batch_first=True,
-                            bidirectional=True)
-        self.layer_norm_4 = nn.LayerNorm(rnn_dim*2)
-        self.dropout_4 = nn.Dropout(p=0.1)
-
-        self.gru_5 = nn.GRU(input_size=rnn_dim*2,
-                            hidden_size=rnn_dim,
-                            batch_first=True,
-                            bidirectional=True)
-        self.layer_norm_5 = nn.LayerNorm(rnn_dim*2)
-        self.dropout_5 = nn.Dropout(p=0.1)
 
         self.classifier = nn.Sequential(
-            nn.Linear(512*2, 512),
+            nn.Linear(512, 256),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(512, n_class)
+            nn.Linear(256, n_class)
         )
 
     def forward(self, x):
@@ -1017,31 +991,7 @@ class ShallowGRU2(nn.Module):
 
         x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
         x = F.gelu(self.fully_connected(x))
-
-        x = self.layer_norm_1(x)
-        x = F.gelu(x)
-        x = self.dropout_1(x)
-        x,_ = self.gru_1(x)
-
-        x = self.layer_norm_2(x)
-        x = F.gelu(x)
-        x = self.dropout_2(x)
-        x,_ = self.gru_2(x)
-
-        x = self.layer_norm_3(x)
-        x = F.gelu(x)
-        x = self.dropout_3(x)
-        x,_ = self.gru_3(x)
-
-        x = self.layer_norm_4(x)
-        x = F.gelu(x)
-        x = self.dropout_4(x)
-        x,_ = self.gru_4(x)
-
-        x = self.layer_norm_5(x)
-        x = F.gelu(x)
-        x = self.dropout_5(x)
-        x,_ = self.gru_5(x)
+        x,_ = self.gru(x)
 
         x = self.classifier(x)
         return x
