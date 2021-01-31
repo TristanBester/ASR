@@ -927,6 +927,133 @@ class GELUModelMod(nn.Module):
 
 
 
+class BidirectionalGRU(nn.Module):
+    def __init__(self, rnn_dim, hidden_size, dropout, batch_first):
+        super(BidirectionalGRU, self).__init__()
+
+        self.BiGRU = nn.GRU(
+            input_size=rnn_dim, hidden_size=hidden_size,
+            num_layers=1, batch_first=batch_first, bidirectional=True)
+        self.layer_norm = nn.LayerNorm(rnn_dim)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        x = self.layer_norm(x)
+        x = F.gelu(x)
+        x, _ = self.BiGRU(x)
+        x = self.dropout(x)
+        return x
+
+
+
+class ShallowGRU2(nn.Module):
+    """Speech Recognition Model Inspired by DeepSpeech 2"""
+    def __init__(self, n_cnn_layers=3, n_rnn_layers=5, rnn_dim=512, n_class=29, n_feats=128, stride=2, dropout=0.1):
+        super().__init__()
+        n_feats = n_feats//2
+        self.conv_1 = nn.Conv2d(in_channels=1, out_channels=32,
+                                kernel_size=(3,3), stride=(1,1))
+
+        self.layer_norm_0 = nn.LayerNorm(normalized_shape=126)
+        self.rcv_1 = nn.Conv2d(in_channels=32,out_channels=32, kernel_size=1)
+        self.rcv_2 = nn.Conv2d(in_channels=32,out_channels=32, kernel_size=3,
+                               stride=1, padding=1)
+
+        rnn_dim=512
+        self.fully_connected = nn.Linear(32*126, rnn_dim)
+
+        self.gru_1 = nn.GRU(input_size=rnn_dim,
+                            hidden_size=rnn_dim,
+                            batch_first=True,
+                            bidirectional=True)
+        self.layer_norm_1 = nn.LayerNorm(rnn_dim)
+        self.dropout_1 = nn.Dropout(p=0.1)
+
+        self.gru_2 = nn.GRU(input_size=rnn_dim*2,
+                            hidden_size=rnn_dim,
+                            batch_first=True,
+                            bidirectional=True)
+        self.layer_norm_2 = nn.LayerNorm(rnn_dim*2)
+        self.dropout_2 = nn.Dropout(p=0.1)
+
+        self.gru_3 = nn.GRU(input_size=rnn_dim*2,
+                            hidden_size=rnn_dim,
+                            batch_first=True,
+                            bidirectional=True)
+        self.layer_norm_3 = nn.LayerNorm(rnn_dim*2)
+        self.dropout_3 = nn.Dropout(p=0.1)
+
+        self.gru_4 = nn.GRU(input_size=rnn_dim*2,
+                            hidden_size=rnn_dim,
+                            batch_first=True,
+                            bidirectional=True)
+        self.layer_norm_4 = nn.LayerNorm(rnn_dim*2)
+        self.dropout_4 = nn.Dropout(p=0.1)
+
+        self.gru_5 = nn.GRU(input_size=rnn_dim*2,
+                            hidden_size=rnn_dim,
+                            batch_first=True,
+                            bidirectional=True)
+        self.layer_norm_5 = nn.LayerNorm(rnn_dim*2)
+        self.dropout_5 = nn.Dropout(p=0.1)
+
+        self.classifier = nn.Sequential(
+            nn.Linear(512*2, 512),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(512, n_class)
+        )
+
+    def forward(self, x):
+        x = F.gelu(self.conv_1(x))
+
+        residual = x
+        x = x.permute(0,1,3,2)
+        x = self.layer_norm_0(x)
+        x = x.permute(0,1,3,2)
+        x = F.gelu(self.rcv_1(x))
+        x = F.gelu(self.rcv_2(x))
+        x += residual
+
+        x = torch.flatten(x, start_dim=1, end_dim=2).permute(0,2,1)
+        x = F.gelu(self.fully_connected(x))
+
+        x = self.layer_norm_1(x)
+        x = F.gelu(x)
+        x = self.dropout_1(x)
+        x,_ = self.gru_1(x)
+
+        x = self.layer_norm_2(x)
+        x = F.gelu(x)
+        x = self.dropout_2(x)
+        x,_ = self.gru_2(x)
+
+        x = self.layer_norm_3(x)
+        x = F.gelu(x)
+        x = self.dropout_3(x)
+        x,_ = self.gru_3(x)
+
+        x = self.layer_norm_4(x)
+        x = F.gelu(x)
+        x = self.dropout_4(x)
+        x,_ = self.gru_4(x)
+
+        x = self.layer_norm_5(x)
+        x = F.gelu(x)
+        x = self.dropout_5(x)
+        x,_ = self.gru_5(x)
+
+        x = self.classifier(x)
+        return x
+
+
+
+
+
+
+
+
+
 
 
 
