@@ -1,0 +1,158 @@
+
+
+############ All models trained on short clips dataset. ######################
+
+
+1) Shallow conv:
+	model - ShallowConv
+	epochs - 19
+	loss - 2.981
+
+2) Standard conv:
+	model - ConvModel
+	epochs - 20
+	loss - 0.95
+
+3) LayerNorm only:
+	model -	NormConv 
+	epochs - 7
+	loss - 2.542 
+
+2) LSTM only:
+	model - LSTMConv
+	epochs - 7
+	loss - 1.516
+
+3) LSTM + LayerNorm:
+	model - NormLSTMConv
+	epochs - 7
+	loss - 1.379 
+
+4) Residual blocks:
+	model - ResConv
+	epochs - 7
+	loss - 1.443 
+
+5) Res + LSTM + LayerNorm:
+	model - ResLSTM
+	epochs - 7
+	loss - 1.139
+
+6) Bidirectional LSTM:
+	model - BidirectionalLSTM
+	epochs - 7
+	loss - 2.137
+
+8) Gelu model:
+	model - GELUModel
+	epochs - 7
+	loss - 0.811
+
+9) Other feature extractor:
+	model - OtherFeatureExtractor
+	epochs - 7
+	loss - 2.530
+
+10) Other classifier:
+	model - OtherClassifier
+	epochs - 7
+	loss - 0.667
+
+11) Deep LSTM:
+	model - DeepLSTM
+	epochs - 7
+	loss - 2.561
+
+12) Shallow GRU:	
+	model - ShallowGRU
+	epochs - 7 
+	loss - ~0.711
+
+13) Unidirectional GRU with mod feature extractor:
+	model - UnidirectionalModel
+	epochs - 7
+	loss - 1.425
+
+14) Other model deeper CNN:
+	model - OtherModelDeeper
+	epochs - 7
+	loss - 0.4968
+
+15) Other model deeper GRU:
+	model - OtherModelDeeperGRU
+	epochs - 7
+	loss - 2.500
+
+16) 1) Other classifier with std GRU:
+	model - OtherClassifierMod
+	epochs - 1 
+	loss - 2.927
+
+17) ShallowGRU + 64 channels:
+	model - ShallowGRUMod
+	epochs - 4
+	loss - 3.05
+
+18) Gelu model with 3 layer LSTM:
+	model - GeluModelMod
+	epochs - 7
+	loss - 2.55
+
+19) Normal Residual Relu:
+	model - ModelRelu
+	epochs - 2
+	loss - 3.06
+
+20) Normal Residual Gelu:
+	model - ModelGelu
+	epochs - 2
+	loss - 3.06
+
+21) Pre-Act Res Relu:
+	model - ModelPreResRelu
+	epochs - 2
+	loss - 3.05
+	
+22) Pre-Act Res Gelu:
+	model - ModelPreResGelu
+	epochs - 1 
+	loss - 3.06
+
+23) Pre-Act Res Gelu with no activation of fc after conv:
+	model - ModelPreResGelu
+	epochs - 2
+	loss - 3.06
+
+24) Wide ResNet:
+	model - WideResNet
+	epochs - 1
+	loss - 3.05
+
+25) Other models CNN test:
+	model - OtherCNN
+	epochs - 3
+	loss - 3.04
+
+26) Other classifier with shallow GRU and deeper ResNet:
+	model - OtherClassifier2
+	epochs - 3
+	loss - 3.04
+
+
+
+******************* Model selected *********************************************
+
+The Gelu model has been chosen for further development.
+
+This model has been chosen due to its simplicity and inference speed.
+
+The model has a 2 layer LSTM unlike many of the other models which make
+use of a 5 layer bidirectional GRU.
+
+The feature extractor is a simple CNN unlike the ResNet like architectures 
+used by the other models making use of residual blocks.
+
+********************************************************************************
+
+
+

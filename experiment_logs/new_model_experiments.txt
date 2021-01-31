@@ -1,0 +1,47 @@
+1) Normal Residual Relu:
+	model - ModelRelu
+	epochs - 2
+	loss - 3.06
+	note - Model clearly would not converge to good solution.
+
+2) Normal Residual Gelu:
+	model - ModelGelu
+	epochs - 2
+	loss - 3.06
+	note - Model would not converge to good solution.
+
+3) Pre-Act Res Relu:
+	model - ModelPreResRelu
+	epochs - 2
+	loss - 3.05
+	
+4) Pre-Act Res Gelu:
+	model - ModelPreResGelu
+	epochs - 1 
+	loss - 3.06
+
+5) Pre-Act Res Gelu with no activation of fc after conv:
+	model - ModelPreResGelu
+	epochs - 2
+	loss - 3.06
+
+6) Wide ResNet:
+	model - WideResNet
+	epochs - 1
+	loss - 3.05
+
+7) Other models CNN test:
+	model - OtherCNN
+	epochs - 3
+	loss - 3.04
+
+8) Other classifier with shallow GRU and deeper ResNet:
+	model - OtherClassifier2
+	epochs - 3
+	loss - 3.04
+
+9) Wide Res Net with all 64 conv blocks:
+	model - WideResNet
+	epochs - 
+	loss - 
+	
