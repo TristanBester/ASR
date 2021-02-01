@@ -5,6 +5,7 @@ class TextEncoder():
         idx_shift = 96 if blank_first else 97
         self.char_int_mapping = {chr(i):(i-idx_shift) for i in range(97, 123)}
         self.char_int_mapping[' '] = 27 if blank_first else 26
+        self.char_int_mapping['\''] = 28
         self.int_char_mapping = {x:i for i,x in self.char_int_mapping.items()}
 
     def char_to_int(self, x):
@@ -32,38 +33,25 @@ class Decoder():
             if x[-i-1] != pad_val:
                 return x[:-i]
 
-    def decode_labels(self, labels, pad_val=0):
-        # labels must first be detached and converted to numpy
-        decoded_labels = []
-        for label in labels:
-            label = self.__strip_padding(label, pad_val)
-            decoded_labels.append(self.text_encoder.int_to_char(label))
-        return self.collapse(decoded_labels)
+    def decode_label(self, label, pad_val=0):
+        label = self.__strip_padding(label, pad_val)
+        label = self.text_encoder.int_to_char(label)
+        return ''.join(label)
 
     def greedy_decode(self, x):
-        raw_preds = []
-        for i in x:
-            raw_pred = [np.argmax(t).item() for t in i]
-            raw_preds.append(raw_pred + [-1])
+        x = np.argmax(x, axis=2)
+        x = np.squeeze(x, axis=1)
 
-        greedy_preds = []
-        for pred in raw_preds:
-            greedy_pred = []
-            for i in range(len(pred)-1):
-                if pred[i] == self.blank_val:
-                    continue
-                elif pred[i] != pred[i+1]:
-                    greedy_pred.append(pred[i])
-            greedy_preds.append(self.text_encoder.int_to_char(greedy_pred))
-        preds = [ '\'' + ''.join(pred) + '\'' for pred in greedy_preds]
-        return preds
+        greedy_pred = []
+        for i in range(len(x)-1):
+            if x[i] == self.blank_val:
+                continue
+            elif x[i] != x[i+1] or i == len(x)-2:
+                greedy_pred.append(x[i])
 
-    def collapse(self, ls):
-        collapsed = [''] * len(ls)
-        for i, pred in enumerate(ls):
-            for ch in pred:
-                collapsed[i] += ch
-        return collapsed
+        greedy_pred = self.text_encoder.int_to_char(greedy_pred)
+        return ''.join(greedy_pred)
+
 
 
 

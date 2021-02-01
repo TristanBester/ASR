@@ -14,9 +14,9 @@
 	loss - 0.95
 
 3) LayerNorm only:
-	model -	NormConv 
+	model -	NormConv
 	epochs - 7
-	loss - 2.542 
+	loss - 2.542
 
 2) LSTM only:
 	model - LSTMConv
@@ -26,12 +26,12 @@
 3) LSTM + LayerNorm:
 	model - NormLSTMConv
 	epochs - 7
-	loss - 1.379 
+	loss - 1.379
 
 4) Residual blocks:
 	model - ResConv
 	epochs - 7
-	loss - 1.443 
+	loss - 1.443
 
 5) Res + LSTM + LayerNorm:
 	model - ResLSTM
@@ -63,9 +63,9 @@
 	epochs - 7
 	loss - 2.561
 
-12) Shallow GRU:	
+12) Shallow GRU:
 	model - ShallowGRU
-	epochs - 7 
+	epochs - 7
 	loss - ~0.711
 
 13) Unidirectional GRU with mod feature extractor:
@@ -85,7 +85,7 @@
 
 16) 1) Other classifier with std GRU:
 	model - OtherClassifierMod
-	epochs - 1 
+	epochs - 1
 	loss - 2.927
 
 17) ShallowGRU + 64 channels:
@@ -112,10 +112,10 @@
 	model - ModelPreResRelu
 	epochs - 2
 	loss - 3.05
-	
+
 22) Pre-Act Res Gelu:
 	model - ModelPreResGelu
-	epochs - 1 
+	epochs - 1
 	loss - 3.06
 
 23) Pre-Act Res Gelu with no activation of fc after conv:
@@ -149,10 +149,4 @@ This model has been chosen due to its simplicity and inference speed.
 The model has a 2 layer LSTM unlike many of the other models which make
 use of a 5 layer bidirectional GRU.
 
-The feature extractor is a simple CNN unlike the ResNet like architectures 
-used by the other models making use of residual blocks.
-
 ********************************************************************************
-
-
-
