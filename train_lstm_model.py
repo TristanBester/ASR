@@ -47,7 +47,7 @@ def train_one_epoch(model, optimizer, criterion, data_loader, device,
         loss.backward()
         optimizer.step()
 
-        ave_loss = incremental_average(ave_loss, loss.item(), n+1)
+        ave_loss = incremental_average(ave_loss, loss.item(), (n+1) * data_loader.batch_size)
         pbar.set_description(f'loss - {ave_loss}')
 
     scheduler.step(ave_loss)

@@ -3,7 +3,7 @@ numpy==1.19.4
 pandas==1.1.5
 Pillow==8.0.1
 torchaudio==0.7.2
-torch==1.7.1+cu101
+-f https://download.pytorch.org/whl/torch_stable.html torch==1.7.1+cu101
 tqdm==4.54.1
 Wand==0.6.5
 wandb==0.10.12
