@@ -10,6 +10,7 @@ from utils import Decoder
 from metrics import WER, CER
 import json
 import argparse
+import numpy as np
 
 def init_args():
     parser = argparse.ArgumentParser()
@@ -130,7 +131,7 @@ if __name__ == '__main__':
     criterion = nn.CTCLoss().to(device)
 
     train_losses = []
-    val_losese = []
+    val_losses = []
     val_CERs = []
     val_WERs = []
 
@@ -143,7 +144,7 @@ if __name__ == '__main__':
         val_losses.append(val_loss)
         val_CERs.append(val_CER)
         val_WERs.append(val_WER)
-        
+
         checkpoint(model, optimizer, scheduler, epoch)
 
         np.save(f'train_losses.npy', np.array(train_losses))
