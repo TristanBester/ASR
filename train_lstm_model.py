@@ -17,6 +17,7 @@ def init_args():
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--train_batch_size', type=int, default=1)
     parser.add_argument('--val_batch_size', type=int, default=1)
+    parser.add_argument('--checkpoint_path', type=str, default=None)
     return parser.parse_args()
 
 def incremental_average(ave, n_val, n):
@@ -110,6 +111,13 @@ def checkpoint(model, optimizer, scheduler, epoch):
     }
     torch.save(ckpt, f'checkpoint-{epoch}.pth')
 
+def load_checkpoint(model, optimizer, scheduler, checkpoint_name):
+    ckpt = torch.load(checkpoint_name)
+    model.load_state_dict(ckpt['model'])
+    optimizer.load_state_dict(ckpt['optimizer'])
+    #scheduler = ckpt['scheduler']
+    return ckpt['epoch']
+
 
 if __name__ == '__main__':
     args = init_args()
@@ -127,15 +135,21 @@ if __name__ == '__main__':
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer,
                                                      factor=0.1,
                                                      patience=1,
-                                                     threshold=0.1)
+                                                     threshold=0.01)
     criterion = nn.CTCLoss().to(device)
+
+
+    if args.checkpoint_path is not None:
+        start_epoch = load_checkpoint(model, optimizer, scheduler, args.checkpoint_path)
+    else:
+        start_epoch = 0
 
     train_losses = []
     val_losses = []
     val_CERs = []
     val_WERs = []
 
-    for epoch in range(args.epochs):
+    for epoch in range(start_epoch, args.epochs):
         train_loss = train_one_epoch(model, optimizer, criterion, train_loader,
                                      device, scheduler)
         val_loss, val_CER, val_WER = validate(model, criterion, val_loader,
