@@ -11,13 +11,15 @@ from metrics import WER, CER
 import json
 import argparse
 import numpy as np
+import os
 
 def init_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--train_batch_size', type=int, default=1)
     parser.add_argument('--val_batch_size', type=int, default=1)
-    parser.add_argument('--checkpoint_path', type=str, default=None)
+    parser.add_argument('--full_checkpoint', type=str, default=None)
+    parser.add_argument('--partial_checkpoint', type=str, default=None)
     return parser.parse_args()
 
 def incremental_average(ave, n_val, n):
@@ -111,17 +113,23 @@ def checkpoint(model, optimizer, scheduler, epoch):
     }
     torch.save(ckpt, f'checkpoint-{epoch}.pth')
 
-def load_checkpoint(model, optimizer, scheduler, checkpoint_name):
+def load_full_checkpoint(model, optimizer, scheduler, checkpoint_name):
     ckpt = torch.load(checkpoint_name)
     model.load_state_dict(ckpt['model'])
     optimizer.load_state_dict(ckpt['optimizer'])
-    #scheduler = ckpt['scheduler']
+    scheduler = ckpt['scheduler']
     return ckpt['epoch']
+
+def load_partial_checkpoint(model, optimizer, checkpoint_name):
+    ckpt = torch.load(checkpoint_name)
+    model.load_state_dict(ckpt['model'])
+    optimizer.load_state_dict(ckpt['optimizer'])
+
 
 
 if __name__ == '__main__':
     args = init_args()
-    train_dataset = LibriSpeechDataset(csv_path='train-clean-100.csv')
+    train_dataset = LibriSpeechDataset(csv_path='train-clean-360-1.csv')
     train_loader = DataLoader(train_dataset, batch_size=args.train_batch_size,
                               collate_fn=collate_fn)
 
@@ -135,12 +143,16 @@ if __name__ == '__main__':
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer,
                                                      factor=0.1,
                                                      patience=1,
-                                                     threshold=0.01)
+                                                     threshold=0.01,
+                                                     verbose=True)
     criterion = nn.CTCLoss().to(device)
 
 
-    if args.checkpoint_path is not None:
+    if args.full_checkpoint is not None:
         start_epoch = load_checkpoint(model, optimizer, scheduler, args.checkpoint_path)
+    elif args.partial_checkpoint is not None:
+        load_partial_checkpoint(model, optimizer, args.partial_checkpoint)
+        start_epoch = 0
     else:
         start_epoch = 0
 
@@ -148,6 +160,12 @@ if __name__ == '__main__':
     val_losses = []
     val_CERs = []
     val_WERs = []
+
+    '''if not os.path.exists('checkpoints'):
+        os.makedirs('checkpoints')'''
+
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
 
     for epoch in range(start_epoch, args.epochs):
         train_loss = train_one_epoch(model, optimizer, criterion, train_loader,
@@ -161,7 +179,7 @@ if __name__ == '__main__':
 
         checkpoint(model, optimizer, scheduler, epoch)
 
-        np.save(f'train_losses.npy', np.array(train_losses))
-        np.save(f'val_losses.npy', np.array(val_losses))
-        np.save(f'val_CERs.npy', np.array(val_CERs))
-        np.save(f'val_WERs.npy', np.array(val_WERs))
+        np.save(f'logs/train_losses.npy', np.array(train_losses))
+        np.save(f'logs/val_losses.npy', np.array(val_losses))
+        np.save(f'logs/val_CERs.npy', np.array(val_CERs))
+        np.save(f'logs/val_WERs.npy', np.array(val_WERs))
