@@ -105,6 +105,7 @@ def validate(model, criterion, data_loader, device, record_file_name):
     return ave_loss, ave_CER, ave_WER
 
 def checkpoint(model, optimizer, scheduler, epoch):
+    print('Creating checkpoint.')
     ckpt = {
         'model':model.state_dict(),
         'optimizer':optimizer.state_dict(),
