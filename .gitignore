@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 /checkpoints*
 /logging_pics
 /my_clips
@@ -13,4 +14,7 @@ train-clean-100.tar.gz
 train-clean-360-1.csv
 train-clean-360.tar.gz
 read.txt
+=======
+/project_data
+>>>>>>> Stashed changes
 
