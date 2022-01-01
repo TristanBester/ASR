@@ -1,8 +1,6 @@
 # ASR
 ### End-to-end Automatic Speech Recognition project
 
-#### Note: Project is still under development.
-
 #### Current progress:
 
 + Initial project planning => completed
